@@ -2,7 +2,7 @@
 
 **DeBugPrint** is a selfmade `println/printf` replacement. It's a minimal implementation to print text/values to `uart`without a lot of external libraries (the goal is to do all of the conversions with own libraries). It's originally designed for use on the **Silicion Labs Happy Gecko EFM32 board** (`EFM32HG322 -- TQFP48`).
 
-### Installation instructions (Simplicity Studo v4)
+## Installation instructions (Simplicity Studo v4)
 
 `File > Properties > C/C++ General > Paths and Symbols`
 
