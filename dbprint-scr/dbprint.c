@@ -56,7 +56,16 @@ USART_TypeDef* usartPointer;
 
 /**************************************************************************//**
  * @brief Initialize USARTx (serial output debugging: Baudrate = 115200 -- eight databits -- one stopbit -- no parity)
- * @note Location example: US1_TX @ datasheet: #4 = USART_ROUTE_LOCATION_LOC4
+ *
+ * @note Alternate Functionality Pinout:
+ *
+ *		Location |  #0  |  #1  |  #2  |  #3  |  #4  |  #5  |  #6  |     ||=================||
+ * 		-----------------------------------------------------------     || VCOM: USART1 #4 ||
+ * 		US0_RX   | PE11 |      | PC10 | PE12 | PB08 | PC01 | PC01 |     ||       RX: PA0   ||
+ * 		US0_TX   | PE10 |      |      | PE13 | PB07 | PC00 | PC00 |     ||       TX: PF2   ||
+ * 		-----------------------------------------------------------     ||=================||
+ * 		US1_RX   | PC01 |      | PD06 | PD06 | PA00 | PC02 |      |
+ * 		US1_TX   | PC00 |      | PD07 | PD07 | PF02 | PC01 |      |
  *
  * @param pointer USARTx pointer
  * @param location Location for the pin routing
@@ -191,6 +200,8 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom)
 		default:
 			usartPointer->ROUTE |= USART_ROUTE_TXPEN | USART_ROUTE_RXPEN | USART_ROUTE_LOCATION_DEFAULT;
 	}
+
+	dbprintln("\r\n\n### UART initialized ###");
 }
 
 
