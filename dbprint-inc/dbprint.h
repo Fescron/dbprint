@@ -14,7 +14,8 @@
 
 /* Prototypes */
 void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom);
-void dbAlert();
+void dbAlert ();
+void dbClear ();
 void dbprint (char *message);
 void dbprintUint (uint8_t radix, uint32_t value);
 void dbprintInt (uint8_t radix, int32_t value);

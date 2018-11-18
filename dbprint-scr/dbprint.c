@@ -1,16 +1,14 @@
 /***************************************************************************//**
  * @file dbprint.c
- * @brief Selfmade println/printf replacement dubbed "DeBugPRINT"
- * @details
- *   baudrate = 115200 -- eight databits -- one stopbit -- no parity
- *   Originally designed for use on the Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48)
- *
+ * @brief Homebrew println/printf replacement dubbed "DeBugPRINT"
+ * @details Originally designed for use on the Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48)
  * @version 1.2
  * @author Brecht Van Eeckhoudt
  *
  * @note
- *   Energy profiler seems to use VCOM somehow, change to using an external UART adapter if both
- *   the energy profiler and UART debugging are necessary at the same time!
+ *   Energy profiler seems to use VCOM (on-board UART to USB converter)somehow,
+ *   change to using an external UART adapter if both the energy profiler and UART debugging
+ *   are necessary at the same time!
  *   If the energy profiler was used and this define was switched, physically replug the board
  *   to make sure VCOM UART starts working again!
  *
@@ -27,10 +25,8 @@
  ******************************************************************************/
 
 /*
- * \n = line feed (new line)
- * \r = carriage return
- * \f = form feed (flush terminal, accessing old data by scrolling up is possible)
- * \a = alert (BELL sound)
+ * Debug using VCOM: dbprint_INIT(USART1, 4, true);
+ *
  */
 
 #include "dbprint.h"
@@ -46,19 +42,20 @@
 USART_TypeDef* usartPointer;
 
 
-
 /**************************************************************************//**
- * @brief Initialize USARTx (serial output debugging: Baudrate = 115200 -- eight databits -- one stopbit -- no parity)
+ * @brief Initialize USARTx
  *
  * @note Alternate Functionality Pinout:
  *
- *      Location |  #0  |  #1  |  #2  |  #3  |  #4  |  #5  |  #6  |     ||===================||=================||
- *      -----------------------------------------------------------     || baudrate = 115200 || VCOM: USART1 #4 ||
- *      US0_RX   | PE11 |      | PC10 | PE12 | PB08 | PC01 | PC01 |     || 8 databits        ||       RX: PA0   ||
- *      US0_TX   | PE10 |      |      | PE13 | PB07 | PC00 | PC00 |     || 1 stopbit         ||       TX: PF2   ||
- *      -----------------------------------------------------------     || no parity         ||=================||
+ *      Location |  #0  |  #1  |  #2  |  #3  |  #4  |  #5  |  #6  |     ||===================||
+ *      -----------------------------------------------------------     || baudrate = 115200 ||
+ *      US0_RX   | PE11 |      | PC10 | PE12 | PB08 | PC01 | PC01 |     || 8 databits        ||
+ *      US0_TX   | PE10 |      |      | PE13 | PB07 | PC00 | PC00 |     || 1 stopbit         ||
+ *      -----------------------------------------------------------     || no parity         ||
  *      US1_RX   | PC01 |      | PD06 | PD06 | PA00 | PC02 |      |     ||===================||
  *      US1_TX   | PC00 |      | PD07 | PD07 | PF02 | PC01 |      |
+ *
+ *      VCOM: USART1 #4 (USART0 not possible) RX: PA0 -- TX: PF2
  *
  * @param pointer USARTx pointer
  * @param location Location for the pin routing
@@ -194,7 +191,8 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom)
 			usartPointer->ROUTE |= USART_ROUTE_TXPEN | USART_ROUTE_RXPEN | USART_ROUTE_LOCATION_DEFAULT;
 	}
 
-	dbprintln("\r\n\n### UART initialized ###");
+	dbClear();
+	dbprintln("### UART initialized ###"); /* Before clear method: "\r\n\n### UART initialized ###" */
 }
 
 
@@ -204,6 +202,16 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom)
 void dbAlert ()
 {
 	USART_Tx(usartPointer, '\a');
+}
+
+
+/**************************************************************************//**
+ * @brief Clear the terminal
+ *****************************************************************************/
+void dbClear ()
+{
+	/* form feed (flush terminal, accessing old data by scrolling up is possible) */
+	USART_Tx(usartPointer, '\f');
 }
 
 
@@ -280,7 +288,7 @@ void dbprintln (char *message)
 	/* Carriage return */
 	USART_Tx(usartPointer, '\r');
 
-	/* New line */
+	/* Line feed (new line) */
 	USART_Tx(usartPointer, '\n');
 }
 
