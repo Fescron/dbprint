@@ -8,6 +8,7 @@
 #include <stdint.h>  	/* (u)intXX_t */
 #include <stdbool.h> 	/* "bool", "true", "false" */
 #include "em_cmu.h"		/* Clock Management Unit */
+#include "em_gpio.h"    /* General Purpose IO (GPIO) peripheral API */
 #include "em_usart.h"	/* Universal synchr./asynchr. receiver/transmitter (USART/UART) Peripheral API */
 
 

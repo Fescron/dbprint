@@ -31,22 +31,15 @@
  * \r = carriage return
  * \f = form feed (flush terminal, accessing old data by scrolling up is possible)
  * \a = alert (BELL sound)
- *
- * uint8_t  ~ unsigned char		1 byte  (0 - 255 or 0xFF)
- * uint16_t ~ unsigned short	2 bytes (0 - 65535 or 0xFFFF)
- * uint32_t ~ unsigned int		4 bytes (0 - 4294967295 or 0xFFFFFFFF)
  */
+
 #include "dbprint.h"
 
 #include <stdlib.h> /* itoa */
 
-/*
- * "?:" = ternary operator
- * example: a = (statement) ? 1 : 0; // "a" will have the value 1 if the statement is true, 0 otherwise.
- */
 
 /* Macro definitions that return a character */
-#define TO_HEX(i) (i <= 9 ? '0' + i : 'A' - 10 + i)
+#define TO_HEX(i) (i <= 9 ? '0' + i : 'A' - 10 + i) /* "?:" = ternary operator (return ['0' + i] if [i <= 9] = true, ['A' - 10 + i] if false) */
 #define TO_DEC(i) (i <= 9 ? '0' + i : '?') /* return "?" if out of range */
 
 /* Global variables */
@@ -59,13 +52,13 @@ USART_TypeDef* usartPointer;
  *
  * @note Alternate Functionality Pinout:
  *
- *		Location |  #0  |  #1  |  #2  |  #3  |  #4  |  #5  |  #6  |     ||=================||
- * 		-----------------------------------------------------------     || VCOM: USART1 #4 ||
- * 		US0_RX   | PE11 |      | PC10 | PE12 | PB08 | PC01 | PC01 |     ||       RX: PA0   ||
- * 		US0_TX   | PE10 |      |      | PE13 | PB07 | PC00 | PC00 |     ||       TX: PF2   ||
- * 		-----------------------------------------------------------     ||=================||
- * 		US1_RX   | PC01 |      | PD06 | PD06 | PA00 | PC02 |      |
- * 		US1_TX   | PC00 |      | PD07 | PD07 | PF02 | PC01 |      |
+ *      Location |  #0  |  #1  |  #2  |  #3  |  #4  |  #5  |  #6  |     ||===================||=================||
+ *      -----------------------------------------------------------     || baudrate = 115200 || VCOM: USART1 #4 ||
+ *      US0_RX   | PE11 |      | PC10 | PE12 | PB08 | PC01 | PC01 |     || 8 databits        ||       RX: PA0   ||
+ *      US0_TX   | PE10 |      |      | PE13 | PB07 | PC00 | PC00 |     || 1 stopbit         ||       TX: PF2   ||
+ *      -----------------------------------------------------------     || no parity         ||=================||
+ *      US1_RX   | PC01 |      | PD06 | PD06 | PA00 | PC02 |      |     ||===================||
+ *      US1_TX   | PC00 |      | PD07 | PD07 | PF02 | PC01 |      |
  *
  * @param pointer USARTx pointer
  * @param location Location for the pin routing
@@ -221,7 +214,8 @@ void dbAlert ()
  *****************************************************************************/
 void dbprint (char *message)
 {
-	/* "message[i] != 0" makes "uint32_t length = strlen(message)" not necessary (given string MUST be terminated by NULL for this to work) */
+	/* "message[i] != 0" makes "uint32_t length = strlen(message)"
+	 * not necessary (given string MUST be terminated by NULL for this to work) */
 	for (uint32_t i = 0; message[i] != 0; i++)
 	{
 		USART_Tx(usartPointer, message[i]);
@@ -303,6 +297,11 @@ void uint32_to_charHex (char *buf, uint32_t value, bool spacing)
 	/*
 	 * 1 nibble = 4 bits (0b1111      = 0xF )
 	 * 1 byte   = 8 bits (0b1111 1111 = 0xFF)
+	 *
+	 * uint8_t  ~ unsigned char		1 byte  (0 - 255 or 0xFF)
+	 * uint16_t ~ unsigned short	2 bytes (0 - 65535 or 0xFFFF)
+	 * uint32_t ~ unsigned int		4 bytes (0 - 4294967295 or 0xFFFFFFFF)
+	 *
 	 */
 
 	/* Checking just in case */
@@ -311,7 +310,8 @@ void uint32_to_charHex (char *buf, uint32_t value, bool spacing)
 		/* 4 nibble HEX representation */
 		if (value <= 0xFFFF)
 		{
-			/* Only get necessary nibble by ANDing with a mask and shifting one nibble (4 bits) per position */
+			/* Only get necessary nibble by ANDing with a mask and
+			 * shifting one nibble (4 bits) per position */
 			buf[0] = TO_HEX(((value & 0xF000) >> 12));
 			buf[1] = TO_HEX(((value & 0x0F00) >> 8 ));
 			buf[2] = TO_HEX(((value & 0x00F0) >> 4 ));
@@ -322,7 +322,8 @@ void uint32_to_charHex (char *buf, uint32_t value, bool spacing)
 		/* 8 nibble HEX representation */
 		else
 		{
-			/* Only get necessary nibble by ANDing with a mask and shifting one nibble (4 bits) per position */
+			/* Only get necessary nibble by ANDing with a mask and
+			 * shifting one nibble (4 bits) per position */
 			buf[0] = TO_HEX(((value & 0xF0000000) >> 28));
 			buf[1] = TO_HEX(((value & 0x0F000000) >> 24));
 			buf[2] = TO_HEX(((value & 0x00F00000) >> 20));
