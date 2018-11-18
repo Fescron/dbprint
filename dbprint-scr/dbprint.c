@@ -1,8 +1,8 @@
 /***************************************************************************//**
  * @file dbprint.c
- * @brief Homebrew println/printf replacement dubbed "DeBugPRINT"
+ * @brief Homebrew println/printf replacement "DeBugPRINT"
  * @details Originally designed for use on the Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48)
- * @version 1.2
+ * @version 2.0
  * @author Brecht Van Eeckhoudt
  *
  * @note
@@ -16,11 +16,12 @@
  *   v1.0: "define" used to jump between VCOM or other mode, itoa (<stdlib.h>) used aswell as stdio.h
  *   v1.1: Separated printInt method in a seperate function for printing "int32_t" and "uint32_t" values,
  *   v1.2: Added more options to the initialize method (location selection & boolean if VCOM is used)
- *   (planned) v2.0: Stopped using itoa for int32_t conversion method
- *   (planned) v1.4: Interrupt settings
+ *   v2.0: Restructure files to be used in other projects, added a lot more documentation and "dbAlert" and "dbClear" methods
  *
  *
- *   TODO: Optimize "CMU_ClockEnable(cmuClock_USART0, true)" clock selection
+ *   TODO: Add interrupt settings
+ *         Optimize "CMU_ClockEnable(cmuClock_USART0, true)" clock selection
+ *         Stop using itoa for int32_t conversion method
  *
  ******************************************************************************/
 
@@ -251,7 +252,7 @@ void dbprintUint (uint8_t radix, uint32_t value)
 	/* Hexadecimal notation */
 	else if (radix == 16)
 	{
-		/* Convert "value" to hexadecimal characters and put them in the buffer (decchar) */
+		/* Convert "value" to hexadecimal characters and put them in the buffer (hexchar) */
 		char hexchar[9]; /* Needs to be 9 */
 		uint32_to_charHex(hexchar, value, true); /* true: add spacing between eight HEX chars */
 		dbprint("0x");
@@ -268,6 +269,7 @@ void dbprintUint (uint8_t radix, uint32_t value)
  *****************************************************************************/
 void dbprintInt (uint8_t radix, int32_t value)
 {
+	/* TODO: stop using itoa */
 	char buffer[4];
 
 	__itoa(value, buffer, radix); /* int char* int */
