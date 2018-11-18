@@ -18,3 +18,56 @@ In the tab **"Source Location"**:
 1. Click `Link Folder...`
 2. Tick *"Link to folder in the file system"*
 3. Click `Browse...`, select the the **"dbprint-scr"** folder and press OK.
+
+
+## Important methods
+
+**Fixed baudrate = 115200 (8 databits, 1 stopbit, no parity)**.
+```C
+void dbprint_INIT(USART_TypeDef* pointer, uint8_t location, bool vcom);
+void dbAlert();
+void dbClear();
+void dbprint(char *message);
+void dbprintUint(uint8_t radix, uint32_t value);
+void dbprintInt(uint8_t radix, int32_t value);
+void dbprintln(char *message);
+```
+
+
+## Alternate locations of pins
+
+| Location |  #0  |  #1  |  #2  |  #3  |  #4  |  #5  |  #6  |
+| -------- |:----:|:----:|:----:|:----:|:----:|:----:|:----:| 
+| US0_RX   | PE11 |      | PC10 | PE12 | PB08 | PC01 | PC01 |
+| US0_TX   | PE10 |      |      | PE13 | PB07 | PC00 | PC00 |
+| US1_RX   | PC01 |      | PD06 | PD06 | PA00 | PC02 |      |
+| US1_TX   | PC00 |      | PD07 | PD07 | PF02 | PC01 |      |
+
+
+## Examples
+
+VCOM is an on-board UART to USB converter alongside the *Segger J-Link debugger*, connected with microcontroller pins `PA0` (RX) `PF2` (TX).
+
+**Warning!** If the *Energy profiler* inside Simplicity Studio is used, printing to VCOM doesn't really work, use an external UART to USB converter while profiling the energy usage!
+
+```C
+dbprint_INIT(USART1, 4, true); /* Initialize UART1 on VCOM */
+```
+```C
+dbAlert(); /* Let the console make an alert sound */
+dbClear(); /* Clear the console window */
+```
+```C
+dbprint("Hello World");
+dbprintln("Hello World");
+```
+```C
+uint32_t uintValue = 42;
+dbprintUint(10, uintValue); /* Decimal notation (base-10) */
+dbprintUint(16, uintValue); /* Hexadecimal notation (base-16) */
+```
+```C
+int32_t intvalue = 42;
+dbprintInt(10, intvalue); /* Decimal notation (base-10) */
+dbprintInt(16, intvalue); /* Hexadecimal notation (base-16) */
+```
