@@ -68,10 +68,10 @@ dbprintInt(16, intvalue); /* Hexadecimal notation (base-16) */
 
 | Location |  #0  |  #1  |  #2  |  #3  |  #4  |  #5  |  #6  |
 | -------- |:----:|:----:|:----:|:----:|:----:|:----:|:----:| 
-| US0_RX   | PE11 |      | PC10 | PE12 | PB08 | PC01 | PC01 |
-| US0_TX   | PE10 |      |      | PE13 | PB07 | PC00 | PC00 |
-| US1_RX   | PC01 |      | PD06 | PD06 | PA00 | PC02 |      |
-| US1_TX   | PC00 |      | PD07 | PD07 | PF02 | PC01 |      |
+| US0_RX   | PE11 |      | PC10 | PE12 | PB8  | PC1  | PC1  |
+| US0_TX   | PE10 |      |      | PE13 | PB7  | PC0  | PC0  |
+| US1_RX   | PC1  |      | PD6  | PD6  | PA0  | PC2  |      |
+| US1_TX   | PC0  |      | PD7  | PD7  | PF2  | PC1  |      |
 
 
 ## Code-example that can be used in the "while(1)" loop in "main.c
