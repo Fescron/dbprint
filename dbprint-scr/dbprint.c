@@ -2,7 +2,7 @@
  * @file dbprint.c
  * @brief Homebrew println/printf replacement "DeBugPRINT"
  * @details Originally designed for use on the Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48)
- * @version 2.0
+ * @version 2.1
  * @author Brecht Van Eeckhoudt
  *
  * @note
@@ -17,18 +17,19 @@
  *   v1.1: Separated printInt method in a seperate function for printing "int32_t" and "uint32_t" values,
  *   v1.2: Added more options to the initialize method (location selection & boolean if VCOM is used)
  *   v2.0: Restructure files to be used in other projects, added a lot more documentation and "dbAlert" and "dbClear" methods
+ *   v2.1: Add interrupt functionality
  *
  *
- *   TODO: Add interrupt settings
- *         Optimize "CMU_ClockEnable(cmuClock_USART0, true)" clock selection
+ *   TODO: Optimize "CMU_ClockEnable(cmuClock_USART0, true)" clock selection
  *         Stop using itoa for int32_t conversion method
  *
  ******************************************************************************/
 
 /*
- * Debug using VCOM: dbprint_INIT(USART1, 4, true);
+ * Debug using VCOM, no interrupts: dbprint_INIT(USART1, 4, true, false);
  *
  */
+
 
 #include "dbprint.h"
 
@@ -39,8 +40,29 @@
 #define TO_HEX(i) (i <= 9 ? '0' + i : 'A' - 10 + i) /* "?:" = ternary operator (return ['0' + i] if [i <= 9] = true, ['A' - 10 + i] if false) */
 #define TO_DEC(i) (i <= 9 ? '0' + i : '?') /* return "?" if out of range */
 
+/* Buffer size */
+#define DBPRINT_BUFFER_SIZE 80
+
+
+
 /* Global variables */
-USART_TypeDef* usartPointer;
+USART_TypeDef* dbpointer;
+
+/* Volatile global variables
+ *
+ *   The “volatile” type indicates to the compiler that the data is not normal memory,
+ *   and could actually change at unexpected times. Hardware registers are often volatile,
+ *   and so are variables which get changed in interrupts.
+ */
+volatile bool dbprint_rx_data_ready = 0;
+volatile char dbprint_rx_buffer[DBPRINT_BUFFER_SIZE];
+volatile char dbprint_tx_buffer[DBPRINT_BUFFER_SIZE];
+
+/*
+ * "static" variable inside a function:     keeps its value between invocations.
+ * "static global" variable or a function:  only "seen" in the file it's declared in
+ */
+
 
 
 /**************************************************************************//**
@@ -61,10 +83,12 @@ USART_TypeDef* usartPointer;
  * @param pointer USARTx pointer
  * @param location Location for the pin routing
  * @param vcom If true: route TX and RX to "Virtual com port (CDC)" on Happy Ghecko board (PA9 is also set high to enable the isolation switch)
+ * @param vcom If true: enable interrupt functionality
  *****************************************************************************/
-void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom)
+void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool interrupts)
 {
-	usartPointer = pointer;
+	/* Store the pointer in the global variable */
+	dbpointer = pointer;
 
 	/*
 	 * USART_INITASYNC_DEFAULT:
@@ -90,10 +114,10 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom)
 	/* Enable oscillator to USARTx modules
 	 * TODO: Optimize this!
 	 */
-	if (usartPointer == USART0) {
+	if (dbpointer == USART0) {
 		CMU_ClockEnable(cmuClock_USART0, true);
 	}
-	else if (usartPointer == USART1) {
+	else if (dbpointer == USART1) {
 		CMU_ClockEnable(cmuClock_USART1, true);
 	}
 
@@ -107,7 +131,7 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom)
 
 
 	/* Set pin modes for UART TX and RX pins */
-	if (usartPointer == USART0) {
+	if (dbpointer == USART0) {
 		switch (location)
 		{
 			case 0:
@@ -135,7 +159,7 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom)
 				/* No default */
 		}
 	}
-	else if (usartPointer == USART1) {
+	else if (dbpointer == USART1) {
 		switch (location)
 		{
 			case 0:
@@ -162,38 +186,77 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom)
 
 
 	/* Initialize USART asynchronous mode */
-	USART_InitAsync(usartPointer, &config);
+	USART_InitAsync(dbpointer, &config);
 
 	/* Route pins */
 	switch (location)
 	{
 		case 0:
-			usartPointer->ROUTE |= USART_ROUTE_TXPEN | USART_ROUTE_RXPEN | USART_ROUTE_LOCATION_LOC0;
+			dbpointer->ROUTE |= USART_ROUTE_TXPEN | USART_ROUTE_RXPEN | USART_ROUTE_LOCATION_LOC0;
 			break;
 		case 1:
-			usartPointer->ROUTE |= USART_ROUTE_TXPEN | USART_ROUTE_RXPEN | USART_ROUTE_LOCATION_LOC1;
+			dbpointer->ROUTE |= USART_ROUTE_TXPEN | USART_ROUTE_RXPEN | USART_ROUTE_LOCATION_LOC1;
 			break;
 		case 2:
-			usartPointer->ROUTE |= USART_ROUTE_TXPEN | USART_ROUTE_RXPEN | USART_ROUTE_LOCATION_LOC2;
+			dbpointer->ROUTE |= USART_ROUTE_TXPEN | USART_ROUTE_RXPEN | USART_ROUTE_LOCATION_LOC2;
 			break;
 		case 3:
-			usartPointer->ROUTE |= USART_ROUTE_TXPEN | USART_ROUTE_RXPEN | USART_ROUTE_LOCATION_LOC3;
+			dbpointer->ROUTE |= USART_ROUTE_TXPEN | USART_ROUTE_RXPEN | USART_ROUTE_LOCATION_LOC3;
 			break;
 		case 4:
-			usartPointer->ROUTE |= USART_ROUTE_TXPEN | USART_ROUTE_RXPEN | USART_ROUTE_LOCATION_LOC4;
+			dbpointer->ROUTE |= USART_ROUTE_TXPEN | USART_ROUTE_RXPEN | USART_ROUTE_LOCATION_LOC4;
 			break;
 		case 5:
-			usartPointer->ROUTE |= USART_ROUTE_TXPEN | USART_ROUTE_RXPEN | USART_ROUTE_LOCATION_LOC5;
+			dbpointer->ROUTE |= USART_ROUTE_TXPEN | USART_ROUTE_RXPEN | USART_ROUTE_LOCATION_LOC5;
 			break;
 		case 6:
-			usartPointer->ROUTE |= USART_ROUTE_TXPEN | USART_ROUTE_RXPEN | USART_ROUTE_LOCATION_LOC6;
+			dbpointer->ROUTE |= USART_ROUTE_TXPEN | USART_ROUTE_RXPEN | USART_ROUTE_LOCATION_LOC6;
 			break;
 		default:
-			usartPointer->ROUTE |= USART_ROUTE_TXPEN | USART_ROUTE_RXPEN | USART_ROUTE_LOCATION_DEFAULT;
+			dbpointer->ROUTE |= USART_ROUTE_TXPEN | USART_ROUTE_RXPEN | USART_ROUTE_LOCATION_DEFAULT;
 	}
 
-	dbClear();
-	dbprintln("### UART initialized ###"); /* Before clear method: "\r\n\n### UART initialized ###" */
+	/* Enable interrupts if necessary and print "welcome" string */
+	if (interrupts)
+	{
+		/* Initialize USART interrupts */
+		USART_IntEnable(dbpointer, USART_IEN_RXDATAV); /* RX Data Valid Interrupt Enable */
+		USART_IntEnable(dbpointer, USART_IEN_TXC);     /* TX Complete Interrupt Enable */
+
+		if (dbpointer == USART0)
+		{
+			/* Enable USART interrupts */
+			NVIC_EnableIRQ(USART0_RX_IRQn);
+			NVIC_EnableIRQ(USART0_TX_IRQn);
+		}
+		else if (dbpointer == USART1)
+		{
+			/* Enable USART interrupts */
+			NVIC_EnableIRQ(USART1_RX_IRQn);
+			NVIC_EnableIRQ(USART1_TX_IRQn);
+		}
+
+		/* Print welcome string using interrupts */
+		char welcome[] = "\r\f### UART initialized (interrupt mode) ###";
+
+		for (uint8_t i = 0 ; welcome[i] != 0; i++)
+		{
+			/* Put the character on UART using interrupts (IRQ handler is executed) */
+			dbprint_tx_buffer[i] = welcome[i];
+		}
+
+		/* Set TX Complete Interrupt Flag */
+		USART_IntSet(dbpointer, USART_IFS_TXC);
+	}
+	/* Print welcome string */
+	else {
+		dbClear();
+
+		/* Before clear method: "\r\n\n### UART initialized ###"
+		 * TODO: Does \f also fix were \n and \r should be necessary?
+		 */
+		dbprintln("### UART initialized (no interrupts) ###");
+	}
 }
 
 
@@ -202,7 +265,7 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom)
  *****************************************************************************/
 void dbAlert ()
 {
-	USART_Tx(usartPointer, '\a');
+	USART_Tx(dbpointer, '\a');
 }
 
 
@@ -212,7 +275,7 @@ void dbAlert ()
 void dbClear ()
 {
 	/* form feed (flush terminal, accessing old data by scrolling up is possible) */
-	USART_Tx(usartPointer, '\f');
+	USART_Tx(dbpointer, '\f');
 }
 
 
@@ -227,7 +290,7 @@ void dbprint (char *message)
 	 * not necessary (given string MUST be terminated by NULL for this to work) */
 	for (uint32_t i = 0; message[i] != 0; i++)
 	{
-		USART_Tx(usartPointer, message[i]);
+		USART_Tx(dbpointer, message[i]);
 	}
 }
 
@@ -288,10 +351,76 @@ void dbprintln (char *message)
 	dbprint(message);
 
 	/* Carriage return */
-	USART_Tx(usartPointer, '\r');
+	USART_Tx(dbpointer, '\r');
 
 	/* Line feed (new line) */
-	USART_Tx(usartPointer, '\n');
+	USART_Tx(dbpointer, '\n');
+}
+
+
+/**************************************************************************//**
+ * @brief USARTx RX interrupt service routine
+ * @note The "weak" definition for this method is in "system_efm32hg.h"
+ *****************************************************************************/
+void USART1_RX_IRQHandler(void)
+{
+	/* "static" so it keeps its value between invocations */
+	static uint32_t i = 0;
+
+	/* Get and clear the pending USART interrupt flags */
+	uint32_t flags = USART_IntGet(dbpointer);
+	USART_IntClear(dbpointer, flags);
+
+	/* Store incoming data into dbprint_rx_buffer */
+	dbprint_rx_buffer[i++] = USART_Rx(dbpointer);
+
+	/* Set dbprint_rx_data_ready when a special character is received (~ full line received) */
+	if (dbprint_rx_buffer[i - 1] == '\r' || dbprint_rx_buffer[i - 1] == '\f')
+	{
+		dbprint_rx_data_ready = 1;
+		dbprint_rx_buffer[i - 1] = '\0'; /* Overwrite CR or LF character */
+		i = 0;
+	}
+
+	/* Set dbprint_rx_data_ready when the buffer is full */
+	if ( i >= DBPRINT_BUFFER_SIZE - 2 )
+	{
+		dbprint_rx_data_ready = 1;
+		dbprint_rx_buffer[i] = '\0'; /* Do not overwrite last character */
+		i = 0;
+	}
+}
+
+
+/**************************************************************************//**
+ * @brief USARTx TX interrupt service routine
+ * @note The "weak" definition for this method is in "system_efm32hg.h"
+ *****************************************************************************/
+void USART1_TX_IRQHandler(void)
+{
+	/* "static" so it keeps its value between invocations */
+	static uint32_t i = 0;
+
+	/* Get and clear the pending USART interrupt flags */
+	uint32_t flags = USART_IntGet(dbpointer);
+	USART_IntClear(dbpointer, flags);
+
+	/* Mask flags AND "TX Complete Interrupt Flag" */
+	if (flags & USART_IF_TXC)
+	{
+		/* Index is smaller than the maximum buffer size and
+		 * the current item to print is not "NULL" (\0)
+		 */
+		if (i < DBPRINT_BUFFER_SIZE && dbprint_tx_buffer[i] != '\0')
+		{
+			/* Transmit byte at current index and increment index */
+			USART_Tx(dbpointer, dbprint_tx_buffer[i++]);
+		}
+		else
+		{
+			i = 0; /* No more data to send */
+		}
+	}
 }
 
 
@@ -384,7 +513,7 @@ void uint32_to_charDec (char *buf, uint32_t value)
 			/* MAX uint32_t value = FFFFFFFFh = 4294967295d (10 chars in dec) */
 			char backwardsBuf[10];
 
-			uint8_t calcval = value;
+			uint32_t calcval = value;
 			uint8_t length, lengthCounter = 0;
 
 

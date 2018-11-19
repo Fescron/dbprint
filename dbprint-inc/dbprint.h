@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @file dbprint.h
  * @brief Homebrew println/printf replacement "DeBugPRINT"
- * @version 2.0
+ * @version 2.1
  * @author Brecht Van Eeckhoudt
  ******************************************************************************/
 
@@ -13,7 +13,7 @@
 
 
 /* Prototypes */
-void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom);
+void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool interrupts);
 void dbAlert ();
 void dbClear ();
 void dbprint (char *message);
