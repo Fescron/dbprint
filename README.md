@@ -20,7 +20,9 @@ In the tab **"Source Location"**:
 3. Click `Browse...`, select the the **"dbprint-scr"** folder and press OK.
 
 
-## Important methods
+## Methods
+
+### Definitions
 
 **Fixed baudrate = 115200 (8 databits, 1 stopbit, no parity)**.
 ```C
@@ -33,18 +35,7 @@ void dbprintInt(uint8_t radix, int32_t value);
 void dbprintln(char *message);
 ```
 
-
-## Alternate locations of pins
-
-| Location |  #0  |  #1  |  #2  |  #3  |  #4  |  #5  |  #6  |
-| -------- |:----:|:----:|:----:|:----:|:----:|:----:|:----:| 
-| US0_RX   | PE11 |      | PC10 | PE12 | PB08 | PC01 | PC01 |
-| US0_TX   | PE10 |      |      | PE13 | PB07 | PC00 | PC00 |
-| US1_RX   | PC01 |      | PD06 | PD06 | PA00 | PC02 |      |
-| US1_TX   | PC00 |      | PD07 | PD07 | PF02 | PC01 |      |
-
-
-## Examples
+### Usage examples
 
 VCOM is an on-board UART to USB converter alongside the *Segger J-Link debugger*, connected with microcontroller pins `PA0` (RX) `PF2` (TX).
 
@@ -71,3 +62,48 @@ int32_t intvalue = 42;
 dbprintInt(10, intvalue); /* Decimal notation (base-10) */
 dbprintInt(16, intvalue); /* Hexadecimal notation (base-16) */
 ```
+
+
+## Alternate locations of pins
+
+| Location |  #0  |  #1  |  #2  |  #3  |  #4  |  #5  |  #6  |
+| -------- |:----:|:----:|:----:|:----:|:----:|:----:|:----:| 
+| US0_RX   | PE11 |      | PC10 | PE12 | PB8  | PC1  | PC1  |
+| US0_TX   | PE10 |      |      | PE13 | PB7  | PC0  | PC0  |
+| US1_RX   | PC1  |      | PD6  | PD6  | PA0  | PC2  |      |
+| US1_TX   | PC0  |      | PD7  | PD7  | PF2  | PC1  |      |
+
+
+## Code-example that can be used in the "while(1)" loop in "main.c
+```C
+/* Notified by the RX handler */
+if (dbprint_rx_data_ready)
+{
+      uint32_t i;
+
+      /* Disable "RX Data Valid Interrupt Enable" and "TX Complete Interrupt Enable" interrupts */
+      USART_IntDisable(dbpointer, USART_IEN_RXDATAV);
+      USART_IntDisable(dbpointer, USART_IEN_TXC);
+
+      /* Copy data from the RX buffer to the TX buffer */
+      for (i = 0; dbprint_rx_buffer[i] != 0 && i < DBPRINT_BUFFER_SIZE-3; i++)
+      {
+            dbprint_tx_buffer[i] = dbprint_rx_buffer[i];
+      }
+
+      /* Add "new line" characters */
+      dbprint_tx_buffer[i++] = '\r';
+      dbprint_tx_buffer[i++] = '\f'; /* Todo: this here might not be optimal */
+      dbprint_tx_buffer[i] = '\0';
+      dbprint_rx_data_ready = 0;
+
+      /* Enable "RX Data Valid Interrupt" and "TX Complete Interrupt" interrupts */
+      USART_IntEnable(dbpointer, USART_IEN_RXDATAV);
+      USART_IntEnable(dbpointer, USART_IEN_TXC);
+
+      /* Set TX Complete Interrupt Flag */
+      USART_IntSet(dbpointer, USART_IFS_TXC);
+}
+```
+
+
