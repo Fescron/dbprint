@@ -24,7 +24,7 @@ In the tab **"Source Location"**:
 
 **Fixed baudrate = 115200 (8 databits, 1 stopbit, no parity)**.
 ```C
-void dbprint_INIT(USART_TypeDef* pointer, uint8_t location, bool vcom);
+void dbprint_INIT(USART_TypeDef* pointer, uint8_t location, bool vcom, bool interrupts);
 void dbAlert();
 void dbClear();
 void dbprint(char *message);
@@ -51,7 +51,7 @@ VCOM is an on-board UART to USB converter alongside the *Segger J-Link debugger*
 **Warning!** If the *Energy profiler* inside Simplicity Studio is used, printing to VCOM doesn't really work, use an external UART to USB converter while profiling the energy usage!
 
 ```C
-dbprint_INIT(USART1, 4, true); /* Initialize UART1 on VCOM */
+dbprint_INIT(USART1, 4, true, false); /* Initialize UART1 on VCOM, no interrupts*/
 ```
 ```C
 dbAlert(); /* Let the console make an alert sound */
