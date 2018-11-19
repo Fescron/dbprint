@@ -40,23 +40,15 @@
 #define TO_HEX(i) (i <= 9 ? '0' + i : 'A' - 10 + i) /* "?:" = ternary operator (return ['0' + i] if [i <= 9] = true, ['A' - 10 + i] if false) */
 #define TO_DEC(i) (i <= 9 ? '0' + i : '?') /* return "?" if out of range */
 
-/* Buffer size */
-#define DBPRINT_BUFFER_SIZE 80
-
-
 
 /* Global variables */
 USART_TypeDef* dbpointer;
 
-/* Volatile global variables
- *
- *   The “volatile” type indicates to the compiler that the data is not normal memory,
- *   and could actually change at unexpected times. Hardware registers are often volatile,
- *   and so are variables which get changed in interrupts.
- */
+/* Volatile global variables */
 volatile bool dbprint_rx_data_ready = 0;
 volatile char dbprint_rx_buffer[DBPRINT_BUFFER_SIZE];
 volatile char dbprint_tx_buffer[DBPRINT_BUFFER_SIZE];
+
 
 /*
  * "static" variable inside a function:     keeps its value between invocations.
