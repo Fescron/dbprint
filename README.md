@@ -77,33 +77,33 @@ dbprintInt(16, intvalue); /* Hexadecimal notation (base-16) */
 ## Code-example that can be used in the "while(1)" loop in "main.c
 ```C
 /* Notified by the RX handler */
-	if (dbprint_rx_data_ready)
-	{
-		uint32_t i;
+if (dbprint_rx_data_ready)
+{
+      uint32_t i;
 
-		/* Disable "RX Data Valid Interrupt Enable" and "TX Complete Interrupt Enable" interrupts */
-		USART_IntDisable(dbpointer, USART_IEN_RXDATAV);
-		USART_IntDisable(dbpointer, USART_IEN_TXC);
+      /* Disable "RX Data Valid Interrupt Enable" and "TX Complete Interrupt Enable" interrupts */
+      USART_IntDisable(dbpointer, USART_IEN_RXDATAV);
+      USART_IntDisable(dbpointer, USART_IEN_TXC);
 
-		/* Copy data from the RX buffer to the TX buffer */
-		for (i = 0; dbprint_rx_buffer[i] != 0 && i < DBPRINT_BUFFER_SIZE-3; i++)
-		{
-			dbprint_tx_buffer[i] = dbprint_rx_buffer[i];
-		}
+      /* Copy data from the RX buffer to the TX buffer */
+      for (i = 0; dbprint_rx_buffer[i] != 0 && i < DBPRINT_BUFFER_SIZE-3; i++)
+      {
+            dbprint_tx_buffer[i] = dbprint_rx_buffer[i];
+      }
 
-		/* Add "new line" characters */
-		dbprint_tx_buffer[i++] = '\r';
-		dbprint_tx_buffer[i++] = '\f'; /* Todo: this here might not be optimal */
-		dbprint_tx_buffer[i] = '\0';
-		dbprint_rx_data_ready = 0;
+      /* Add "new line" characters */
+      dbprint_tx_buffer[i++] = '\r';
+      dbprint_tx_buffer[i++] = '\f'; /* Todo: this here might not be optimal */
+      dbprint_tx_buffer[i] = '\0';
+      dbprint_rx_data_ready = 0;
 
-		/* Enable "RX Data Valid Interrupt" and "TX Complete Interrupt" interrupts */
-		USART_IntEnable(dbpointer, USART_IEN_RXDATAV);
-		USART_IntEnable(dbpointer, USART_IEN_TXC);
+      /* Enable "RX Data Valid Interrupt" and "TX Complete Interrupt" interrupts */
+      USART_IntEnable(dbpointer, USART_IEN_RXDATAV);
+      USART_IntEnable(dbpointer, USART_IEN_TXC);
 
-		/* Set TX Complete Interrupt Flag */
-		USART_IntSet(dbpointer, USART_IFS_TXC);
-	}
+      /* Set TX Complete Interrupt Flag */
+      USART_IntSet(dbpointer, USART_IFS_TXC);
+}
 ```
 
 
