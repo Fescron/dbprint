@@ -68,8 +68,8 @@ volatile char dbprint_tx_buffer[DBPRINT_BUFFER_SIZE];
 
 
 /*
- * "static" variable inside a function:     keeps its value between invocations.
- * "static global" variable or a function:  only "seen" in the file it's declared in
+ * "static" variable inside a function: keeps its value between invocations.
+ * "static" global variable or function: only "seen" in the file it's declared in
  */
 
 
@@ -119,8 +119,10 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 	/* Enable oscillator to GPIO*/
 	CMU_ClockEnable(cmuClock_GPIO, true);
 
+	/* Enable HFPERCLK since USART is a HFPERCLK peripheral */
+	CMU_ClockEnable(cmuClock_HFPER, true);
 
-	/* Enable oscillator to USARTx modules
+	/* Enable oscillator to USARTx modules (USART is a HFPERCLK peripheral)
 	 * TODO: Optimize this!
 	 */
 	if (dbpointer == USART0) {
@@ -225,12 +227,21 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 			dbpointer->ROUTE |= USART_ROUTE_TXPEN | USART_ROUTE_RXPEN | USART_ROUTE_LOCATION_DEFAULT;
 	}
 
-	/* Enable interrupts if necessary and print "welcome" string */
+	/* Enable interrupts if necessary and print welcome string */
 	if (interrupts)
 	{
 		/* Initialize USART interrupts */
-		USART_IntEnable(dbpointer, USART_IEN_RXDATAV); /* RX Data Valid Interrupt Enable */
-		USART_IntEnable(dbpointer, USART_IEN_TXC);     /* TX Complete Interrupt Enable */
+
+		/* RX Data Valid Interrupt Enable
+		 *   Set when data is available in the receive buffer. Cleared when the receive buffer is empty.
+		 */
+		USART_IntEnable(dbpointer, USART_IEN_RXDATAV);
+
+		/* TX Complete Interrupt Enable
+		 *   Set when a transmission has completed and no more data is available in the transmit buffer.
+		 *   Cleared when a new transmission starts.
+		 */
+		USART_IntEnable(dbpointer, USART_IEN_TXC);
 
 		if (dbpointer == USART0)
 		{
@@ -245,15 +256,11 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 			NVIC_EnableIRQ(USART1_TX_IRQn);
 		}
 
-		/* Print welcome string using interrupts */
-		char welcome[] = "\r\f### UART initialized (interrupt mode) ###\r\n";
+		/* Print welcome string */
+		dbprintln("\r\f### UART initialized (interrupt mode) ###");
 
-		for (uint8_t i = 0 ; welcome[i] != 0; i++)
-		{
-			dbprint_tx_buffer[i] = welcome[i];
-		}
-
-		/* Set TX Complete Interrupt Flag (~ start TX handler) */
+		/* Set TX Complete Interrupt Flag (transmission has completed and no more data
+		* is available in the transmit buffer) */
 		USART_IntSet(dbpointer, USART_IFS_TXC);
 	}
 	/* Print welcome string if not in interrupt mode */
