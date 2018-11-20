@@ -506,7 +506,8 @@ void uint32_to_charDec (char *buf, uint32_t value)
 			char backwardsBuf[10];
 
 			uint32_t calcval = value;
-			uint8_t length, lengthCounter = 0;
+			uint8_t length = 0;
+			uint8_t lengthCounter = 0;
 
 
 			/* Loop until the value is zero (separate characters 0-9) and calculate length */
