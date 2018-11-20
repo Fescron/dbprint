@@ -99,7 +99,7 @@ If you use **dbprint** you don't really need to worry about this but you need to
 
 ## 4 - Code-example that can be used in the "while(1)" loop in "main.c"
 ```C
-/* Notified by the RX handler */
+/* Data is ready to retransmit (notified by the RX handler) */
 if (dbprint_rxdata)
 {
       uint32_t i;
