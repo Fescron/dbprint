@@ -233,14 +233,12 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 		/* Initialize USART interrupts */
 
 		/* RX Data Valid Interrupt Enable
-		 *   Set when data is available in the receive buffer. Cleared when the receive buffer is empty.
-		 */
+		 *   Set when data is available in the receive buffer. Cleared when the receive buffer is empty. */
 		USART_IntEnable(dbpointer, USART_IEN_RXDATAV);
 
 		/* TX Complete Interrupt Enable
 		 *   Set when a transmission has completed and no more data is available in the transmit buffer.
-		 *   Cleared when a new transmission starts.
-		 */
+		 *   Cleared when a new transmission starts. */
 		USART_IntEnable(dbpointer, USART_IEN_TXC);
 
 		if (dbpointer == USART0)
@@ -369,72 +367,6 @@ void dbprintln (char *message)
 
 
 /**************************************************************************//**
- * @brief USARTx RX interrupt service routine
- * @note The "weak" definition for this method is in "system_efm32hg.h"
- *****************************************************************************/
-void USART1_RX_IRQHandler(void)
-{
-	/* "static" so it keeps its value between invocations */
-	static uint32_t i = 0;
-
-	/* Get and clear the pending USART interrupt flags */
-	uint32_t flags = USART_IntGet(dbpointer);
-	USART_IntClear(dbpointer, flags);
-
-	/* Store incoming data into dbprint_rx_buffer */
-	dbprint_rx_buffer[i++] = USART_Rx(dbpointer);
-
-	/* Set dbprint_rxdata when a special character is received (~ full line received) */
-	if (dbprint_rx_buffer[i - 1] == '\r' || dbprint_rx_buffer[i - 1] == '\f')
-	{
-		dbprint_rxdata = 1;
-		dbprint_rx_buffer[i - 1] = '\0'; /* Overwrite CR or LF character */
-		i = 0;
-	}
-
-	/* Set dbprint_rxdata when the buffer is full */
-	if ( i >= DBPRINT_BUFFER_SIZE - 2 )
-	{
-		dbprint_rxdata = 1;
-		dbprint_rx_buffer[i] = '\0'; /* Do not overwrite last character */
-		i = 0;
-	}
-}
-
-
-/**************************************************************************//**
- * @brief USARTx TX interrupt service routine
- * @note The "weak" definition for this method is in "system_efm32hg.h"
- *****************************************************************************/
-void USART1_TX_IRQHandler(void)
-{
-	/* "static" so it keeps its value between invocations */
-	static uint32_t i = 0;
-
-	/* Get and clear the pending USART interrupt flags */
-	uint32_t flags = USART_IntGet(dbpointer);
-	USART_IntClear(dbpointer, flags);
-
-	/* Mask flags AND "TX Complete Interrupt Flag" */
-	if (flags & USART_IF_TXC)
-	{
-		/* Index is smaller than the maximum buffer size and
-		 * the current item to print is not "NULL" (\0)
-		 */
-		if (i < DBPRINT_BUFFER_SIZE && dbprint_tx_buffer[i] != '\0')
-		{
-			/* Transmit byte at current index and increment index */
-			USART_Tx(dbpointer, dbprint_tx_buffer[i++]);
-		}
-		else
-		{
-			i = 0; /* No more data to send */
-		}
-	}
-}
-
-
-/**************************************************************************//**
  * @brief Convert uint32_t to HEX char notation (string)
  *
  * @param buf The buffer (needs to be: "char buf[9];")
@@ -443,6 +375,8 @@ void USART1_TX_IRQHandler(void)
  *****************************************************************************/
 void uint32_to_charHex (char *buf, uint32_t value, bool spacing)
 {
+	/* TODO: Maybe simplify this (based on charHex_to_uint32) */
+
 	/*
 	 * 1 nibble = 4 bits (0b1111      = 0xF )
 	 * 1 byte   = 8 bits (0b1111 1111 = 0xFF)
@@ -496,7 +430,6 @@ void uint32_to_charHex (char *buf, uint32_t value, bool spacing)
 				buf[7] = TO_HEX( (value & 0x0000000F)       );
 				buf[8] = '\0'; /* NULL termination character */
 			}
-
 		}
 	}
 }
@@ -554,4 +487,131 @@ void uint32_to_charDec (char *buf, uint32_t value)
 	}
 }
 
+
+/**************************************************************************//**
+ * @brief Convert string (DEC char array) to uint32_t
+ *
+ * @param buf The decimal char array to convert
+ *****************************************************************************/
+uint32_t charDec_to_uint32 (char *buf)
+{
+	uint32_t value = 0;
+
+	/* Loop until buffer is empty */
+	while (*buf)
+	{
+		/* Get current character, increment afterwards */
+		uint8_t byte = *buf++;
+
+		/* Convert the ASCII (decimal) char to the representing decimal value
+		 * and add it to the value (which is multiplied by 10 for each position) */
+		value = value * 10 + (byte - '0');
+	}
+
+	return (value);
+}
+
+
+/**************************************************************************//**
+ * @brief Convert string (HEX char array) to uint32_t
+ *
+ * @param buf The hexadecimal char array to convert
+ *****************************************************************************/
+uint32_t charHex_to_uint32 (char *buf)
+{
+	/*
+	 * 1 nibble = 4 bits (0b1111      = 0xF )
+	 * 1 byte   = 8 bits (0b1111 1111 = 0xFF)
+	 *
+	 * uint8_t  ~ unsigned char		1 byte  (0 - 255 or 0xFF)
+	 * uint16_t ~ unsigned short	2 bytes (0 - 65535 or 0xFFFF)
+	 * uint32_t ~ unsigned int		4 bytes (0 - 4294967295 or 0xFFFFFFFF)
+	 *
+	 */
+
+	uint32_t value = 0;
+
+	/* Loop until buffer is empty */
+	while (*buf)
+	{
+		/* Get current character, increment afterwards */
+		uint8_t byte = *buf++;
+
+		/* Convert hex character to the 4bit equivalent number using the ASCII table indexes */
+		if (byte >= '0' && byte <= '9')byte = byte - '0';
+		else if (byte >= 'a' && byte <='f') byte = byte - 'a' + 10;
+		else if (byte >= 'A' && byte <='F') byte = byte - 'A' + 10;
+
+		/* Shift one nibble (4 bits) to make space for a new digit
+		 * and add the 4 bits (ANDing with a mask: 0xF = 0b1111) */
+		value = (value << 4) | (byte & 0xF);
+	}
+
+	return (value);
+}
+
+
+/**************************************************************************//**
+ * @brief USARTx RX interrupt service routine
+ * @note The "weak" definition for this method is in "system_efm32hg.h"
+ *****************************************************************************/
+void USART1_RX_IRQHandler(void)
+{
+	/* "static" so it keeps its value between invocations */
+	static uint32_t i = 0;
+
+	/* Get and clear the pending USART interrupt flags */
+	uint32_t flags = USART_IntGet(dbpointer);
+	USART_IntClear(dbpointer, flags);
+
+	/* Store incoming data into dbprint_rx_buffer */
+	dbprint_rx_buffer[i++] = USART_Rx(dbpointer);
+
+	/* Set dbprint_rxdata when a special character is received (~ full line received) */
+	if (dbprint_rx_buffer[i - 1] == '\r' || dbprint_rx_buffer[i - 1] == '\f')
+	{
+		dbprint_rxdata = 1;
+		dbprint_rx_buffer[i - 1] = '\0'; /* Overwrite CR or LF character */
+		i = 0;
+	}
+
+	/* Set dbprint_rxdata when the buffer is full */
+	if ( i >= DBPRINT_BUFFER_SIZE - 2 )
+	{
+		dbprint_rxdata = 1;
+		dbprint_rx_buffer[i] = '\0'; /* Do not overwrite last character */
+		i = 0;
+	}
+}
+
+
+/**************************************************************************//**
+ * @brief USARTx TX interrupt service routine
+ * @note The "weak" definition for this method is in "system_efm32hg.h"
+ *****************************************************************************/
+void USART1_TX_IRQHandler(void)
+{
+	/* "static" so it keeps its value between invocations */
+	static uint32_t i = 0;
+
+	/* Get and clear the pending USART interrupt flags */
+	uint32_t flags = USART_IntGet(dbpointer);
+	USART_IntClear(dbpointer, flags);
+
+	/* Mask flags AND "TX Complete Interrupt Flag" */
+	if (flags & USART_IF_TXC)
+	{
+		/* Index is smaller than the maximum buffer size and
+		 * the current item to print is not "NULL" (\0) */
+		if (i < DBPRINT_BUFFER_SIZE && dbprint_tx_buffer[i] != '\0')
+		{
+			/* Transmit byte at current index and increment index */
+			USART_Tx(dbpointer, dbprint_tx_buffer[i++]);
+		}
+		else
+		{
+			i = 0; /* No more data to send */
+		}
+	}
+}
 
