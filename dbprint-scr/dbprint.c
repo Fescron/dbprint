@@ -5,6 +5,19 @@
  * @version 2.1
  * @author Brecht Van Eeckhoudt
  *
+ * ******************************************************************************
+ * @section License
+ *   Some methods use code obtained from examples from Silicon Labs,
+ *   these sections are licensed under the Silabs License Agreement. See the file
+ *   "Silabs_License_Agreement.txt" for details. Before using this software for
+ *   any purpose, you must agree to the terms of that agreement.
+ *
+ *   Code was obtained from examples from "https://github.com/SiliconLabs/peripheral_examples":
+ *      - usart/async_polled/src/main_s0.c (version 0.0.1)
+ *      - usart/async_interrupt/src/main_s0.c (version 0.0.1)
+ *
+ * ******************************************************************************
+ *
  * @note
  *   Energy profiler seems to use VCOM (on-board UART to USB converter)somehow,
  *   change to using an external UART adapter if both the energy profiler and UART debugging
@@ -12,7 +25,9 @@
  *   If the energy profiler was used and this define was switched, physically replug the board
  *   to make sure VCOM UART starts working again!
  *
+ * ******************************************************************************
  *
+ * @section Versions
  *   v1.0: "define" used to jump between VCOM or other mode, itoa (<stdlib.h>) used aswell as stdio.h
  *   v1.1: Separated printInt method in a seperate function for printing "int32_t" and "uint32_t" values,
  *   v1.2: Added more options to the initialize method (location selection & boolean if VCOM is used)
@@ -242,12 +257,7 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 	}
 	/* Print welcome string */
 	else {
-		dbClear();
-
-		/* Before clear method: "\r\n\n### UART initialized ###"
-		 * TODO: Does \f also fix were \n and \r should be necessary?
-		 */
-		dbprintln("### UART initialized (no interrupts) ###");
+		dbprintln("\r\f### UART initialized (no interrupts) ###");
 	}
 }
 
