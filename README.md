@@ -104,41 +104,41 @@ If you use **dbprint** you don't really need to worry about this but you need to
 /* Data is ready to retransmit (notified by the RX handler) */
 if (dbprint_rxdata)
 {
-      uint32_t i;
+   uint32_t i;
       
-      /* RX Data Valid Interrupt Enable
-       *   Set when data is available in the receive buffer. Cleared when the receive buffer is empty.
-       *
-       * TX Complete Interrupt Enable
-       *   Set when a transmission has completed and no more data is available in the transmit buffer.
-       *   Cleared when a new transmission starts.
-       */
+   /* RX Data Valid Interrupt Enable
+    *   Set when data is available in the receive buffer. Cleared when the receive buffer is empty.
+    *
+    * TX Complete Interrupt Enable
+    *   Set when a transmission has completed and no more data is available in the transmit buffer.
+    *   Cleared when a new transmission starts.
+    */
 
-      /* Disable "RX Data Valid Interrupt Enable" and "TX Complete Interrupt Enable" interrupts */
-      USART_IntDisable(dbpointer, USART_IEN_RXDATAV);
-      USART_IntDisable(dbpointer, USART_IEN_TXC);
+   /* Disable "RX Data Valid Interrupt Enable" and "TX Complete Interrupt Enable" interrupts */
+   USART_IntDisable(dbpointer, USART_IEN_RXDATAV);
+   USART_IntDisable(dbpointer, USART_IEN_TXC);
 
-      /* Copy data from the RX buffer to the TX buffer */
-      for (i = 0; dbprint_rx_buffer[i] != 0 && i < DBPRINT_BUFFER_SIZE-3; i++)
-      {
-            dbprint_tx_buffer[i] = dbprint_rx_buffer[i];
-      }
+   /* Copy data from the RX buffer to the TX buffer */
+   for (i = 0; dbprint_rx_buffer[i] != 0 && i < DBPRINT_BUFFER_SIZE-3; i++)
+   {
+      dbprint_tx_buffer[i] = dbprint_rx_buffer[i];
+   }
 
-      /* Add "new line" characters */
-      dbprint_tx_buffer[i++] = '\r';
-      dbprint_tx_buffer[i++] = '\n';
-      dbprint_tx_buffer[i] = '\0';
+   /* Add "new line" characters */
+   dbprint_tx_buffer[i++] = '\r';
+   dbprint_tx_buffer[i++] = '\n';
+   dbprint_tx_buffer[i] = '\0';
       
-      /* Reset "notification" variable */
-      dbprint_rxdata = false;
+   /* Reset "notification" variable */
+   dbprint_rxdata = false;
 
-      /* Enable "RX Data Valid Interrupt" and "TX Complete Interrupt" interrupts */
-      USART_IntEnable(dbpointer, USART_IEN_RXDATAV);
-      USART_IntEnable(dbpointer, USART_IEN_TXC);
+   /* Enable "RX Data Valid Interrupt" and "TX Complete Interrupt" interrupts */
+   USART_IntEnable(dbpointer, USART_IEN_RXDATAV);
+   USART_IntEnable(dbpointer, USART_IEN_TXC);
 
-      /* Set TX Complete Interrupt Flag (transmission has completed and no more data 
-       * is available in the transmit buffer) */
-      USART_IntSet(dbpointer, USART_IFS_TXC);
+   /* Set TX Complete Interrupt Flag (transmission has completed and no more data 
+    * is available in the transmit buffer) */
+   USART_IntSet(dbpointer, USART_IFS_TXC);
 }
 ```
 
