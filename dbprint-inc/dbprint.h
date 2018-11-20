@@ -26,7 +26,7 @@ extern USART_TypeDef* dbpointer;
  * Extern
  *   Declare the global variables in headers and actually define them in the appropriate source file.
  */
-extern volatile bool dbprint_rx_data_ready;
+extern volatile bool dbprint_rxdata; /* true if there is data received */
 extern volatile char dbprint_rx_buffer[DBPRINT_BUFFER_SIZE];
 extern volatile char dbprint_tx_buffer[DBPRINT_BUFFER_SIZE];
 

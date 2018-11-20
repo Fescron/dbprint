@@ -45,7 +45,7 @@
 USART_TypeDef* dbpointer;
 
 /* Volatile global variables */
-volatile bool dbprint_rx_data_ready = 0;
+volatile bool dbprint_rxdata = false; /* true if there is data received */
 volatile char dbprint_rx_buffer[DBPRINT_BUFFER_SIZE];
 volatile char dbprint_tx_buffer[DBPRINT_BUFFER_SIZE];
 
@@ -366,18 +366,18 @@ void USART1_RX_IRQHandler(void)
 	/* Store incoming data into dbprint_rx_buffer */
 	dbprint_rx_buffer[i++] = USART_Rx(dbpointer);
 
-	/* Set dbprint_rx_data_ready when a special character is received (~ full line received) */
+	/* Set dbprint_rxdata when a special character is received (~ full line received) */
 	if (dbprint_rx_buffer[i - 1] == '\r' || dbprint_rx_buffer[i - 1] == '\f')
 	{
-		dbprint_rx_data_ready = 1;
+		dbprint_rxdata = 1;
 		dbprint_rx_buffer[i - 1] = '\0'; /* Overwrite CR or LF character */
 		i = 0;
 	}
 
-	/* Set dbprint_rx_data_ready when the buffer is full */
+	/* Set dbprint_rxdata when the buffer is full */
 	if ( i >= DBPRINT_BUFFER_SIZE - 2 )
 	{
-		dbprint_rx_data_ready = 1;
+		dbprint_rxdata = 1;
 		dbprint_rx_buffer[i] = '\0'; /* Do not overwrite last character */
 		i = 0;
 	}
