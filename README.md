@@ -99,17 +99,7 @@ If you use **dbprint** you don't really need to worry about this but you need to
 
 ## 4 - Code examples for when dbprint is in "interrupt mode"
 
-### 4.1 - Send data using interrupts
-```C
-char welcome[] = "### Hello world! ###\r\n";
-
-for (uint8_t i = 0 ; welcome[i] != 0; i++)
-{
-      dbprint_tx_buffer[i] = welcome[i];
-}
-```
-
-### 4.2 - Echo text back (can be put in "while(1)" in "main.c")
+### 4.1 - Echo text back (can be put in "while(1)" in "main.c")
 ```C
 /* Data is ready to retransmit (notified by the RX handler) */
 if (dbprint_rxdata)
