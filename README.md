@@ -43,16 +43,13 @@ In any *Simplicity Studio example project* (like **blink**) all of the header fi
 **Fixed baudrate = 115200 (8 databits, 1 stopbit, no parity)**.
 ```C
 void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool interrupts);
-```
-```C
+
 void dbAlert();
 void dbClear();
-```
-```C
+
 void dbprint(char *message);
 void dbprintln(char *message);
-```
-```C
+
 void dbprintUint(uint32_t value);
 void dbprintUint_hex(uint32_t value);
 void dbprintInt(uint8_t radix, int32_t value);
