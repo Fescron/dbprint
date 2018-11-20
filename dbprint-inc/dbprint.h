@@ -40,10 +40,14 @@ extern volatile char dbprint_tx_buffer[DBPRINT_BUFFER_SIZE];
 void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool interrupts);
 void dbAlert ();
 void dbClear ();
+
 void dbprint (char *message);
-void dbprintUint (uint8_t radix, uint32_t value);
-void dbprintInt (uint8_t radix, int32_t value);
 void dbprintln (char *message);
+
+void dbprintUint (uint32_t value)
+void dbprintUint_hex (uint32_t value)
+void dbprintInt (uint8_t radix, int32_t value);
+
 void uint32_to_charHex (char *buf, uint32_t value, bool spacing);
 void uint32_to_charDec (char *buf, uint32_t value);
 uint32_t charDec_to_uint32 (char *buf);

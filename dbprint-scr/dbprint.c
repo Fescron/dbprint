@@ -304,31 +304,29 @@ void dbprint (char *message)
 
 
 /**************************************************************************//**
- * @brief Print a uint32_t to USARTx
+ * @brief Print a uint32_t in decimal notation to USARTx
  *
- * @param radix 10 for decimal, 16 for hexadecimal
  * @param value The value to display
  *****************************************************************************/
-void dbprintUint (uint8_t radix, uint32_t value)
+void dbprintUint (uint32_t value)
 {
-	/* Decimal notation */
-	if (radix == 10)
-	{
-		/* Convert "value" to decimal characters and put them in the buffer (decchar) */
-		char decchar[10]; /* Needs to be 10 */
-		uint32_to_charDec(decchar, value);
-		dbprint(decchar);
-	}
+	char decchar[10]; /* Needs to be 10 */
+	uint32_to_charDec(decchar, value);
+	dbprint(decchar);
+}
 
-	/* Hexadecimal notation */
-	else if (radix == 16)
-	{
-		/* Convert "value" to hexadecimal characters and put them in the buffer (hexchar) */
-		char hexchar[9]; /* Needs to be 9 */
-		uint32_to_charHex(hexchar, value, true); /* true: add spacing between eight HEX chars */
-		dbprint("0x");
-		dbprint(hexchar);
-	}
+
+/**************************************************************************//**
+ * @brief Print a uint32_t in hexadecimal notation to USARTx
+ *
+ * @param value The value to display
+ *****************************************************************************/
+void dbprintUint_hex (uint32_t value)
+{
+	char hexchar[9]; /* Needs to be 9 */
+	uint32_to_charHex(hexchar, value, true); /* true: add spacing between eight HEX chars */
+	dbprint("0x");
+	dbprint(hexchar);
 }
 
 
