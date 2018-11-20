@@ -4,6 +4,7 @@
 
 **DeBugPrint** is originally designed for use on the `Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48)`.
 
+**NOTE:** There is a lot of useful simple code-examples at https://github.com/SiliconLabs/peripheral_examples
 
 ## 1 - Installation instructions (Simplicity Studo v4)
 
@@ -54,7 +55,7 @@ void dbprintln(char *message);
 
 VCOM is an on-board UART to USB converter alongside the *Segger J-Link debugger*, connected with microcontroller pins `PA0` (RX) `PF2` (TX).
 
-**Warning!** If the *Energy profiler* inside Simplicity Studio is used, printing to VCOM doesn't really work, use an external UART to USB converter while profiling the energy usage!
+**WARNING:** If the *Energy profiler* inside Simplicity Studio is used, printing to VCOM doesn't really work, use an external UART to USB converter while profiling the energy usage!
 
 ```C
 dbprint_INIT(USART1, 4, true, false); /* Initialize UART1 on VCOM, no interrupts*/
