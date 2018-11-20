@@ -229,7 +229,7 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 		}
 
 		/* Print welcome string using interrupts */
-		char welcome[] = "\r\f### UART initialized (interrupt mode) ###";
+		char welcome[] = "\r\f### UART initialized (interrupt mode) ###\r\n";
 
 		for (uint8_t i = 0 ; welcome[i] != 0; i++)
 		{
