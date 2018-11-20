@@ -126,7 +126,7 @@ if (dbprint_rxdata)
       USART_IntEnable(dbpointer, USART_IEN_RXDATAV);
       USART_IntEnable(dbpointer, USART_IEN_TXC);
 
-      /* Set TX Complete Interrupt Flag */
+      /* Set TX Complete Interrupt Flag (~ start TX handler) */
       USART_IntSet(dbpointer, USART_IFS_TXC);
 }
 ```
