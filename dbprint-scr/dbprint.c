@@ -28,6 +28,8 @@
  * ******************************************************************************
  *
  * @section Versions
+ *   Please check "https://github.com/Fescron/dbprint" to find the latest version of dbprint!
+ *
  *   v1.0: "define" used to jump between VCOM or other mode, itoa (<stdlib.h>) used aswell as stdio.h
  *   v1.1: Separated printInt method in a seperate function for printing "int32_t" and "uint32_t" values,
  *   v1.2: Added more options to the initialize method (location selection & boolean if VCOM is used)
