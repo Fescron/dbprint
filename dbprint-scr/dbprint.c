@@ -250,14 +250,13 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 
 		for (uint8_t i = 0 ; welcome[i] != 0; i++)
 		{
-			/* Put the character on UART using interrupts (IRQ handler is executed) */
 			dbprint_tx_buffer[i] = welcome[i];
 		}
 
-		/* Set TX Complete Interrupt Flag */
+		/* Set TX Complete Interrupt Flag (~ start TX handler) */
 		USART_IntSet(dbpointer, USART_IFS_TXC);
 	}
-	/* Print welcome string */
+	/* Print welcome string if not in interrupt mode */
 	else {
 		dbprintln("\r\f### UART initialized (no interrupts) ###");
 	}
