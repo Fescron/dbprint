@@ -109,7 +109,7 @@ for (uint8_t i = 0 ; welcome[i] != 0; i++)
 }
 ```
 
-### 4.1 - Echo text back (can be put in "while(1)" in "main.c")
+### 4.2 - Echo text back (can be put in "while(1)" in "main.c")
 ```C
 /* Data is ready to retransmit (notified by the RX handler) */
 if (dbprint_rxdata)
