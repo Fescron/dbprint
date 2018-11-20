@@ -115,7 +115,7 @@ if (dbprint_rxdata)
 
       /* Add "new line" characters */
       dbprint_tx_buffer[i++] = '\r';
-      dbprint_tx_buffer[i++] = '\f'; /* Todo: this here might not be optimal */
+      dbprint_tx_buffer[i++] = '\n';
       dbprint_tx_buffer[i] = '\0';
       dbprint_rxdata = false;
 
