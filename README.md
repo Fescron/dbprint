@@ -103,6 +103,14 @@ If you use **dbprint** you don't really need to worry about this but you need to
 if (dbprint_rxdata)
 {
       uint32_t i;
+      
+      /* RX Data Valid Interrupt Enable
+       *   Set when data is available in the receive buffer. Cleared when the receive buffer is empty.
+       *
+       * TX Complete Interrupt Enable
+       *   Set when a transmission has completed and no more data is available in the transmit buffer.
+       *   Cleared when a new transmission starts.
+       */
 
       /* Disable "RX Data Valid Interrupt Enable" and "TX Complete Interrupt Enable" interrupts */
       USART_IntDisable(dbpointer, USART_IEN_RXDATAV);
@@ -126,7 +134,8 @@ if (dbprint_rxdata)
       USART_IntEnable(dbpointer, USART_IEN_RXDATAV);
       USART_IntEnable(dbpointer, USART_IEN_TXC);
 
-      /* Set TX Complete Interrupt Flag (~ start TX handler) */
+      /* Set TX Complete Interrupt Flag (transmission has completed and no more data 
+       * is available in the transmit buffer) */
       USART_IntSet(dbpointer, USART_IFS_TXC);
 }
 ```
