@@ -99,7 +99,7 @@ If you use **dbprint** you don't really need to worry about this but you need to
 ## 4 - Code-example that can be used in the "while(1)" loop in "main.c"
 ```C
 /* Notified by the RX handler */
-if (dbprint_rx_data_ready)
+if (dbprint_rxdata)
 {
       uint32_t i;
 
@@ -117,7 +117,7 @@ if (dbprint_rx_data_ready)
       dbprint_tx_buffer[i++] = '\r';
       dbprint_tx_buffer[i++] = '\f'; /* Todo: this here might not be optimal */
       dbprint_tx_buffer[i] = '\0';
-      dbprint_rx_data_ready = 0;
+      dbprint_rxdata = false;
 
       /* Enable "RX Data Valid Interrupt" and "TX Complete Interrupt" interrupts */
       USART_IntEnable(dbpointer, USART_IEN_RXDATAV);
