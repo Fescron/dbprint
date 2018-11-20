@@ -2,7 +2,7 @@
  * @file dbprint.c
  * @brief Homebrew println/printf replacement "DeBugPRINT"
  * @details Originally designed for use on the Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48)
- * @version 2.1
+ * @version 2.2
  * @author Brecht Van Eeckhoudt
  *
  * ******************************************************************************
@@ -31,10 +31,11 @@
  *   Please check "https://github.com/Fescron/dbprint" to find the latest version of dbprint!
  *
  *   v1.0: "define" used to jump between VCOM or other mode, itoa (<stdlib.h>) used aswell as stdio.h
- *   v1.1: Separated printInt method in a seperate function for printing "int32_t" and "uint32_t" values,
+ *   v1.1: Separated printInt method in a separate function for printing "int32_t" and "uint32_t" values
  *   v1.2: Added more options to the initialize method (location selection & boolean if VCOM is used)
- *   v2.0: Restructure files to be used in other projects, added a lot more documentation and "dbAlert" and "dbClear" methods
+ *   v2.0: Restructure files to be used in other projects, added a lot more documentation, added "dbAlert" and "dbClear" methods
  *   v2.1: Add interrupt functionality
+ *   v2.2: Add parse functions, separated method for printing uint values in a separate one for DEC and HEX notation
  *
  *
  *   TODO: Optimize "CMU_ClockEnable(cmuClock_USART0, true)" clock selection
@@ -50,7 +51,7 @@
 
 #include "dbprint.h"
 
-#include <stdlib.h> /* itoa */
+#include <stdlib.h> /* itoa TODO: get this away from here */
 
 
 /* Macro definitions that return a character */
@@ -62,7 +63,7 @@
 USART_TypeDef* dbpointer;
 
 /* Volatile global variables */
-volatile bool dbprint_rxdata = false; /* true if there is data received */
+volatile bool dbprint_rxdata = false; /* true if there is a line of data received */
 volatile char dbprint_rx_buffer[DBPRINT_BUFFER_SIZE];
 volatile char dbprint_tx_buffer[DBPRINT_BUFFER_SIZE];
 
@@ -92,7 +93,7 @@ volatile char dbprint_tx_buffer[DBPRINT_BUFFER_SIZE];
  * @param pointer USARTx pointer
  * @param location Location for the pin routing
  * @param vcom If true: route TX and RX to "Virtual com port (CDC)" on Happy Ghecko board (PA9 is also set high to enable the isolation switch)
- * @param vcom If true: enable interrupt functionality
+ * @param interrupts If true: enable interrupt functionality
  *****************************************************************************/
 void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool interrupts)
 {
@@ -119,10 +120,8 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 	/* Enable oscillator to GPIO*/
 	CMU_ClockEnable(cmuClock_GPIO, true);
 
-	/* Enable HFPERCLK since USART is a HFPERCLK peripheral */
-	CMU_ClockEnable(cmuClock_HFPER, true);
 
-	/* Enable oscillator to USARTx modules (USART is a HFPERCLK peripheral)
+	/* Enable oscillator to USARTx modules
 	 * TODO: Optimize this!
 	 */
 	if (dbpointer == USART0) {
