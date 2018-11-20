@@ -5,9 +5,11 @@
 **DeBugPrint** is originally designed for use on the `Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48)`.
 
 
-## Installation instructions (Simplicity Studo v4)
+## 1 - Installation instructions (Simplicity Studo v4)
 
-`File > Properties > C/C++ General > Paths and Symbols`
+### 1.1 - Add "dbprint.c" and "dbprint.h" to your project
+
+Open the project settings using `File > Properties > C/C++ General > Paths and Symbols`.
 
 In the tab **"Includes"**:
 1. Click `Add... > File system...`
@@ -19,10 +21,23 @@ In the tab **"Source Location"**:
 2. Tick *"Link to folder in the file system"*
 3. Click `Browse...`, select the the **"dbprint-scr"** folder and press OK.
 
+### 1.2 - Add "em_usart.c" to your project
 
-## Methods
+In any *Simplicity Studio example project* (like **blink**) all of the header files for "emlib" are included but the c-files are sometimes not. This needs to be done manually:
+1. In the **Project Explorer** on the left, rightclick on the **"emlib"** folder under your project and select `New > File from Template`
+2. Click on `Advanced>>`and tick *"Link to file in the file system"*.
+3. Click `Browse...`, go to `SimplicityStudio_v4/developer/sdks/gecko_sdk_suite/v2.4/platform/emlib/src`, select the the **"em_usart.c"** file and press OK.
+4. Press FINISH
 
-### Definitions
+### 1.3 - Include "dbprint.h" in your project's "main.c" file
+
+```C
+#include "dbprint.h"
+```
+
+## 2 - Methods
+
+### 2.1 - Definitions
 
 **Fixed baudrate = 115200 (8 databits, 1 stopbit, no parity)**.
 ```C
@@ -35,7 +50,7 @@ void dbprintInt(uint8_t radix, int32_t value);
 void dbprintln(char *message);
 ```
 
-### Usage examples
+### 2.2 - Usage examples
 
 VCOM is an on-board UART to USB converter alongside the *Segger J-Link debugger*, connected with microcontroller pins `PA0` (RX) `PF2` (TX).
 
@@ -64,7 +79,14 @@ dbprintInt(16, intvalue); /* Hexadecimal notation (base-16) */
 ```
 
 
-## Alternate locations of pins
+## 3 - Alternate locations of pins
+
+In C, pin selection happens at the end of initialization methods using statements like:
+```C
+USART1->ROUTE |= USART_ROUTE_TXPEN | USART_ROUTE_RXPEN | USART_ROUTE_LOCATION_LOC0;
+```
+
+If you use **dbprint** you don't really need to worry about this but you need to make sure you still select the correct location while using the `dbprint_INIT` method. The following location numbers and corresponding `RX`and `TX`pins for `USART0`and `USART1` are given below.
 
 | Location |  #0  |  #1  |  #2  |  #3  |  #4  |  #5  |  #6  |
 | -------- |:----:|:----:|:----:|:----:|:----:|:----:|:----:| 
@@ -74,7 +96,7 @@ dbprintInt(16, intvalue); /* Hexadecimal notation (base-16) */
 | US1_TX   | PC0  |      | PD7  | PD7  | PF2  | PC1  |      |
 
 
-## Code-example that can be used in the "while(1)" loop in "main.c
+## 4 - Code-example that can be used in the "while(1)" loop in "main.c"
 ```C
 /* Notified by the RX handler */
 if (dbprint_rx_data_ready)
