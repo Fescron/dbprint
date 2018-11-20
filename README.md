@@ -117,6 +117,8 @@ if (dbprint_rxdata)
       dbprint_tx_buffer[i++] = '\r';
       dbprint_tx_buffer[i++] = '\n';
       dbprint_tx_buffer[i] = '\0';
+      
+      /* Reset "notification" variable */
       dbprint_rxdata = false;
 
       /* Enable "RX Data Valid Interrupt" and "TX Complete Interrupt" interrupts */
