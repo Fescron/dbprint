@@ -42,13 +42,26 @@ In any *Simplicity Studio example project* (like **blink**) all of the header fi
 
 **Fixed baudrate = 115200 (8 databits, 1 stopbit, no parity)**.
 ```C
-void dbprint_INIT(USART_TypeDef* pointer, uint8_t location, bool vcom, bool interrupts);
+void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool interrupts);
+```
+```C
 void dbAlert();
 void dbClear();
+```
+```C
 void dbprint(char *message);
-void dbprintUint(uint8_t radix, uint32_t value);
-void dbprintInt(uint8_t radix, int32_t value);
 void dbprintln(char *message);
+```
+```C
+void dbprintUint(uint32_t value);
+void dbprintUint_hex(uint32_t value);
+void dbprintInt(uint8_t radix, int32_t value);
+```
+```C
+void uint32_to_charHex(char *buf, uint32_t value, bool spacing);
+void uint32_to_charDec(char *buf, uint32_t value);
+uint32_t charDec_to_uint32(char *buf);
+uint32_t charHex_to_uint32(char *buf);
 ```
 
 ### 2.2 - Usage examples
@@ -61,22 +74,22 @@ void dbprintln(char *message);
 dbprint_INIT(USART1, 4, true, false); /* Initialize UART1 on VCOM, no interrupts*/
 ```
 ```C
-dbAlert(); /* Let the console make an alert sound */
+dbAlert(); /* Let the console make an "alert" (bell) sound */
 dbClear(); /* Clear the console window */
 ```
 ```C
-dbprint("Hello World");
-dbprintln("Hello World");
+dbprint("Hello World");   /* Print text to uart */
+dbprintln("Hello World"); /* Print text to uart and go to the next line */
 ```
 ```C
 uint32_t uintValue = 42;
-dbprintUint(10, uintValue); /* Decimal notation (base-10) */
-dbprintUint(16, uintValue); /* Hexadecimal notation (base-16) */
+dbprintUint(uintValue);     /* Print "unsigned int" value in decimal notation */
+dbprintUint_hex(uintValue); /* Print "unsigned int" value in hexadecimal notation */
 ```
 ```C
 int32_t intvalue = 42;
-dbprintInt(10, intvalue); /* Decimal notation (base-10) */
-dbprintInt(16, intvalue); /* Hexadecimal notation (base-16) */
+dbprintInt(10, intvalue); /* Print "signed int" value in decimal notation (base-10) */
+dbprintInt(16, intvalue); /* Print "signed int" value in hexadecimal notation (base-16) */
 ```
 
 
