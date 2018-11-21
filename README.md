@@ -4,7 +4,7 @@
 
 **DeBugPrint** is originally designed for use on the `Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48)`.
 
-**NOTE:** There is a lot of useful simple code-examples at https://github.com/SiliconLabs/peripheral_examples
+**NOTE:** There are a lot of useful simple code-examples at https://github.com/SiliconLabs/peripheral_examples
 
 ## 1 - Installation instructions (Simplicity Studo v4)
 
