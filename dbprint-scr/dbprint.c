@@ -1,11 +1,12 @@
 /***************************************************************************//**
  * @file dbprint.c
- * @brief Homebrew println/printf replacement "DeBugPRINT"
- * @details Originally designed for use on the Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48)
- * @version 2.2
+ * @brief Homebrew println/printf replacement "DeBugPRINT".
+ * @details Originally designed for use on the Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48).
+ * @version 2.3
  * @author Brecht Van Eeckhoudt
  *
  * ******************************************************************************
+ *
  * @section License
  *   Some methods use code obtained from examples from Silicon Labs,
  *   these sections are licensed under the Silabs License Agreement. See the file
@@ -36,17 +37,35 @@
  *   v2.0: Restructure files to be used in other projects, added a lot more documentation, added "dbAlert" and "dbClear" methods
  *   v2.1: Add interrupt functionality
  *   v2.2: Add parse functions, separated method for printing uint values in a separate one for DEC and HEX notation
+ *   v2.3: Update documentation
  *
+ * ******************************************************************************
  *
- *   TODO: Optimize "CMU_ClockEnable(cmuClock_USART0, true)" clock selection
- *         Stop using itoa for int32_t conversion method
+ * @note
+ *   Debug using VCOM, no interrupts:
+ *
+ *   dbprint_INIT(USART1, 4, true, false);
+ *
+ * ******************************************************************************
+ *
+ * @section "C" keywords
+ *
+ *   Volatile
+ *     The “volatile” type indicates to the compiler that the data is not normal memory,
+ *     and could change at unexpected times. Hardware registers are often volatile,
+ *     and so are variables which get changed in interrupts.
+ *
+ *   Extern
+ *     Declare the global variables in headers (and use the "extern" keyword there)
+ *     and actually define them in the appropriate source file.
+ *
+ *   Static
+ *     Static variable inside a function:
+ *         The variable keeps its value between invocations.
+ *     Static global variable or function:
+ *         The variable or function is only "seen" in the file it's declared in.
  *
  ******************************************************************************/
-
-/*
- * Debug using VCOM, no interrupts: dbprint_INIT(USART1, 4, true, false);
- *
- */
 
 
 #include "dbprint.h"
@@ -68,18 +87,13 @@ volatile char dbprint_rx_buffer[DBPRINT_BUFFER_SIZE];
 volatile char dbprint_tx_buffer[DBPRINT_BUFFER_SIZE];
 
 
-/*
- * "static" variable inside a function: keeps its value between invocations.
- * "static" global variable or function: only "seen" in the file it's declared in
- */
-
-
 
 /**************************************************************************//**
- * @brief Initialize USARTx
+ * @brief
+ *   Initialize USARTx.
  *
- * @note Alternate Functionality Pinout:
- *
+ * @note
+ *   Alternate Functionality Pinout:
  *      Location |  #0  |  #1  |  #2  |  #3  |  #4  |  #5  |  #6  |     ||===================||
  *      -----------------------------------------------------------     || baudrate = 115200 ||
  *      US0_RX   | PE11 |      | PC10 | PE12 | PB08 | PC01 | PC01 |     || 8 databits        ||
@@ -90,10 +104,19 @@ volatile char dbprint_tx_buffer[DBPRINT_BUFFER_SIZE];
  *
  *      VCOM: USART1 #4 (USART0 not possible) RX: PA0 -- TX: PF2
  *
- * @param pointer USARTx pointer
- * @param location Location for the pin routing
- * @param vcom If true: route TX and RX to "Virtual com port (CDC)" on Happy Ghecko board (PA9 is also set high to enable the isolation switch)
- * @param interrupts If true: enable interrupt functionality
+ * @param[in] pointer
+ *   Pointer to USARTx.
+ *
+ * @param[in] location
+ *   Location for the pin routing.
+ *
+ * @param[in] vcom
+ *   @li true - Isolation switch enabled by setting PA9 high so the "Virtual com port (CDC)" can be used.
+ *   @li false - Isolation switch disabled on the Happy Gecko board.
+ *
+ * @param[in] interrupts
+ *   @li true - Enable interrupt functionality.
+ *   @li false - No interrupt functionality is initialized.
  *****************************************************************************/
 void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool interrupts)
 {
@@ -268,7 +291,11 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 
 
 /**************************************************************************//**
- * @brief Print the BELL character to USARTx to sound an ALERT
+ * @brief
+ *   Sound an alert in the terminal.
+ *
+ * @details
+ *   Print the "bell" (alert) character to USARTx.
  *****************************************************************************/
 void dbAlert ()
 {
@@ -277,19 +304,25 @@ void dbAlert ()
 
 
 /**************************************************************************//**
- * @brief Clear the terminal
+ * @brief
+ *   Clear the terminal.
+ *
+ * @details
+ *   Print the "form feed" character to USARTx. Accessing old data is still
+ *   possible by scrolling up in the serial port program.
  *****************************************************************************/
 void dbClear ()
 {
-	/* form feed (flush terminal, accessing old data by scrolling up is possible) */
 	USART_Tx(dbpointer, '\f');
 }
 
 
 /**************************************************************************//**
- * @brief Print a string (char array) to USARTx
+ * @brief
+ *   Print a string (char array) to USARTx.
  *
- * @param message The message to display
+ * @param[in] message
+ *   The string to print to USARTx.
  *****************************************************************************/
 void dbprint (char *message)
 {
@@ -303,9 +336,11 @@ void dbprint (char *message)
 
 
 /**************************************************************************//**
- * @brief Print a uint32_t in decimal notation to USARTx
+ * @brief
+ *   Print a uint32_t value in decimal notation to USARTx.
  *
- * @param value The value to display
+ * @param[in] value
+ *   The uint32_t value to print to USARTx.
  *****************************************************************************/
 void dbprintUint (uint32_t value)
 {
@@ -316,9 +351,11 @@ void dbprintUint (uint32_t value)
 
 
 /**************************************************************************//**
- * @brief Print a uint32_t in hexadecimal notation to USARTx
+ * @brief
+ *   Print a uint32_t value in hexadecimal notation to USARTx.
  *
- * @param value The value to display
+ * @param[in] value
+ *   The uint32_t value to print to USARTx.
  *****************************************************************************/
 void dbprintUint_hex (uint32_t value)
 {
@@ -330,10 +367,15 @@ void dbprintUint_hex (uint32_t value)
 
 
 /**************************************************************************//**
- * @brief Print a int32_t to USARTx
+ * @brief
+ *   Print a int32_t value to USARTx.
  *
- * @param radix 10 for decimal, 16 for hexadecimal
- * @param value The value to display
+ * @param[in] radix
+ *   @li 10 - Resulting string will be in decimal notation.
+ *   @li 16 - Resulting string will be in hexadecimal notation.
+ *
+ * @param[in] value
+ *   The int32_t value to print to USARTx.
  *****************************************************************************/
 void dbprintInt (uint8_t radix, int32_t value)
 {
@@ -347,9 +389,11 @@ void dbprintInt (uint8_t radix, int32_t value)
 
 
 /**************************************************************************//**
- * @brief Print a string (char array) to USARTx and go to the next line
+ * @brief
+ *   Print a string (char array) to USARTx and go to the next line.
  *
- * @param message The message to display
+ * @param[in] message
+ *   The string to print to USARTx.
  *****************************************************************************/
 void dbprintln (char *message)
 {
@@ -364,11 +408,18 @@ void dbprintln (char *message)
 
 
 /**************************************************************************//**
- * @brief Convert uint32_t to HEX char notation (string)
+ * @brief
+ *   Convert a uint32_t value to HEX char notation (string).
  *
- * @param buf The buffer (needs to be: "char buf[9];")
- * @param value The uint32_t value
- * @param spacing True if there needs to be added spacing between the eight HEX chars
+ * @param[out] buf
+ *   The buffer to put the resulting string in (needs have a length of 9: "char buf[9];").
+ *
+ * @param[in] value
+ *   The uint32_t value to convert to a string.
+ *
+ * @param[in] spacing
+ *   @li true - Add spacing between the eight HEX chars to make two groups of four.
+ *   @li false - Don't add spacing between the eight HEX chars.
  *****************************************************************************/
 void uint32_to_charHex (char *buf, uint32_t value, bool spacing)
 {
@@ -433,10 +484,14 @@ void uint32_to_charHex (char *buf, uint32_t value, bool spacing)
 
 
 /**************************************************************************//**
- * @brief Convert uint32_t to DEC char notation (string)
+ * @brief
+ *   Convert a uint32_t value to DEC char notation (string)
  *
- * @param buf The buffer (needs to be: "char buf[10];")
- * @param value The uint32_t value
+ * @param[out] buf
+ *   The buffer to put the resulting string in (needs have a length of 10: "char buf[10];").
+ *
+ * @param[in] value
+ *   The uint32_t value to convert to a string.
  *****************************************************************************/
 void uint32_to_charDec (char *buf, uint32_t value)
 {
@@ -486,9 +541,14 @@ void uint32_to_charDec (char *buf, uint32_t value)
 
 
 /**************************************************************************//**
- * @brief Convert string (DEC char array) to uint32_t
+ * @brief
+ *   Convert a string (char array) in decimal notation to a uint32_t value.
  *
- * @param buf The decimal char array to convert
+ * @param[in] buf
+ *   The decimal string to convert in a uint32_t value.
+ *
+ * @return
+ *   The resulting uint32_t value.
  *****************************************************************************/
 uint32_t charDec_to_uint32 (char *buf)
 {
@@ -510,9 +570,14 @@ uint32_t charDec_to_uint32 (char *buf)
 
 
 /**************************************************************************//**
- * @brief Convert string (HEX char array) to uint32_t
+ * @brief
+ *   Convert a string (char array) in hexadecimal notation to a uint32_t value.
  *
- * @param buf The hexadecimal char array to convert
+ * @param[in] buf
+ *   The hexadecimal string to convert in a uint32_t value.
+ *
+ * @return
+ *   The resulting uint32_t value.
  *****************************************************************************/
 uint32_t charHex_to_uint32 (char *buf)
 {
@@ -525,6 +590,8 @@ uint32_t charHex_to_uint32 (char *buf)
 	 * uint32_t ~ unsigned int		4 bytes (0 - 4294967295 or 0xFFFFFFFF)
 	 *
 	 */
+
+	/* TODO: Maybe fix so "0x" prefixes can be omitted? */
 
 	uint32_t value = 0;
 
@@ -549,8 +616,11 @@ uint32_t charHex_to_uint32 (char *buf)
 
 
 /**************************************************************************//**
- * @brief USARTx RX interrupt service routine
- * @note The "weak" definition for this method is in "system_efm32hg.h"
+ * @brief
+ *   USARTx RX interrupt service routine.
+ *
+ * @note
+ *   The "weak" definition for this method is located in "system_efm32hg.h".
  *****************************************************************************/
 void USART1_RX_IRQHandler(void)
 {
@@ -583,8 +653,11 @@ void USART1_RX_IRQHandler(void)
 
 
 /**************************************************************************//**
- * @brief USARTx TX interrupt service routine
- * @note The "weak" definition for this method is in "system_efm32hg.h"
+ * @brief
+ *   USARTx TX interrupt service routine.
+ *
+ * @note
+ *   The "weak" definition for this method is located in "system_efm32hg.h".
  *****************************************************************************/
 void USART1_TX_IRQHandler(void)
 {
