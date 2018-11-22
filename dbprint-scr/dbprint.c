@@ -544,6 +544,9 @@ void uint32_to_charDec (char *buf, uint32_t value)
  * @brief
  *   Convert a string (char array) in decimal notation to a uint32_t value.
  *
+ * @note
+ *   The input buffer needs to end with NULL ('\0')!
+ *
  * @param[in] buf
  *   The decimal string to convert in a uint32_t value.
  *
@@ -562,7 +565,7 @@ uint32_t charDec_to_uint32 (char *buf)
 
 		/* Convert the ASCII (decimal) char to the representing decimal value
 		 * and add it to the value (which is multiplied by 10 for each position) */
-		value = value * 10 + (byte - '0');
+		value = (value * 10) + (byte - '0');
 	}
 
 	return (value);
@@ -572,6 +575,9 @@ uint32_t charDec_to_uint32 (char *buf)
 /**************************************************************************//**
  * @brief
  *   Convert a string (char array) in hexadecimal notation to a uint32_t value.
+ *
+ * @note
+ *   The input buffer needs to end with NULL ('\0')!
  *
  * @param[in] buf
  *   The hexadecimal string to convert in a uint32_t value.
