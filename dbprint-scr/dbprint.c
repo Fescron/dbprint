@@ -277,7 +277,7 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 		}
 
 		/* Print welcome string */
-		dbprintln("\r\f### UART initialized (interrupt mode) ###");
+		dbprintln("\a\r\f### UART initialized (interrupt mode) ###");
 
 		/* Set TX Complete Interrupt Flag (transmission has completed and no more data
 		* is available in the transmit buffer) */
@@ -285,7 +285,7 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 	}
 	/* Print welcome string if not in interrupt mode */
 	else {
-		dbprintln("\r\f### UART initialized (no interrupts) ###");
+		dbprintln("\a\r\f### UART initialized (no interrupts) ###");
 	}
 }
 
