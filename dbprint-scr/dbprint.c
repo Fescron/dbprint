@@ -320,6 +320,9 @@ void dbClear ()
 /**************************************************************************//**
  * @brief
  *   Print a string (char array) to USARTx.
+ * 
+ * @note
+ *   If a buffer (char array) is given as a parameter, it needs to end with NULL ('\0')!
  *
  * @param[in] message
  *   The string to print to USARTx.
