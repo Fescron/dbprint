@@ -322,7 +322,8 @@ void dbClear ()
  *   Print a string (char array) to USARTx.
  * 
  * @note
- *   If a buffer (char array) is given as a parameter, it needs to end with NULL ('\0')!
+ *   If the input is not a string (ex.: "Hello world!") but a char array,
+ *   the input message (array) needs to end with NULL ('\0')!
  *
  * @param[in] message
  *   The string to print to USARTx.
@@ -415,7 +416,8 @@ void dbprintln (char *message)
  *   Convert a uint32_t value to HEX char notation (string).
  *
  * @param[out] buf
- *   The buffer to put the resulting string in (needs have a length of 9: "char buf[9];").
+ *   The buffer to put the resulting string in.
+ *   This needs have a length of 9: "char buf[9];"!
  *
  * @param[in] value
  *   The uint32_t value to convert to a string.
@@ -491,13 +493,16 @@ void uint32_to_charHex (char *buf, uint32_t value, bool spacing)
  *   Convert a uint32_t value to DEC char notation (string)
  *
  * @param[out] buf
- *   The buffer to put the resulting string in (needs have a length of 10: "char buf[10];").
+ *   The buffer to put the resulting string in.
+ *   This needs have a length of 10: "char buf[10];"!
  *
  * @param[in] value
  *   The uint32_t value to convert to a string.
  *****************************************************************************/
 void uint32_to_charDec (char *buf, uint32_t value)
 {
+	/* TODO: Maybe simplify this (based on charDec_to_uint32) */
+
 	/* Checking just in case */
 	if (value <= 0xFFFFFFFF)
 	{
@@ -548,7 +553,8 @@ void uint32_to_charDec (char *buf, uint32_t value)
  *   Convert a string (char array) in decimal notation to a uint32_t value.
  *
  * @note
- *   The input buffer needs to end with NULL ('\0')!
+ *   If the input is not a string (ex.: "00BA0FA1") but a char array,
+ *   the input buffer (array) needs to end with NULL ('\0')!
  *
  * @param[in] buf
  *   The decimal string to convert in a uint32_t value.
@@ -558,6 +564,8 @@ void uint32_to_charDec (char *buf, uint32_t value)
  *****************************************************************************/
 uint32_t charDec_to_uint32 (char *buf)
 {
+	/* TODO: Check max amount of chars fit in uint32_t? */
+
 	uint32_t value = 0;
 
 	/* Loop until buffer is empty */
@@ -566,7 +574,7 @@ uint32_t charDec_to_uint32 (char *buf)
 		/* Get current character, increment afterwards */
 		uint8_t byte = *buf++;
 
-		/* Convert the ASCII (decimal) char to the representing decimal value
+		/* Convert the ASCII (decimal) character to the representing decimal value
 		 * and add it to the value (which is multiplied by 10 for each position) */
 		value = (value * 10) + (byte - '0');
 	}
@@ -580,7 +588,8 @@ uint32_t charDec_to_uint32 (char *buf)
  *   Convert a string (char array) in hexadecimal notation to a uint32_t value.
  *
  * @note
- *   The input buffer needs to end with NULL ('\0')!
+ *   If the input is not a string (ex.: "00120561") but a char array,
+ *   the input buffer (array) needs to end with NULL ('\0')!
  *
  * @param[in] buf
  *   The hexadecimal string to convert in a uint32_t value.
@@ -600,7 +609,7 @@ uint32_t charHex_to_uint32 (char *buf)
 	 *
 	 */
 
-	/* TODO: Maybe fix so "0x" prefixes can be omitted? */
+	/* TODO: Maybe fix so "0x" prefixes can be omitted? Check max amount of chars fit in uint32_t? */
 
 	uint32_t value = 0;
 
@@ -610,13 +619,13 @@ uint32_t charHex_to_uint32 (char *buf)
 		/* Get current character, increment afterwards */
 		uint8_t byte = *buf++;
 
-		/* Convert hex character to the 4bit equivalent number using the ASCII table indexes */
+		/* Convert the hex character to the 4bit equivalent number using the ASCII table indexes */
 		if (byte >= '0' && byte <= '9')byte = byte - '0';
 		else if (byte >= 'a' && byte <='f') byte = byte - 'a' + 10;
 		else if (byte >= 'A' && byte <='F') byte = byte - 'A' + 10;
 
 		/* Shift one nibble (4 bits) to make space for a new digit
-		 * and add the 4 bits (ANDing with a mask: 0xF = 0b1111) */
+		 * and add the 4 bits (ANDing with a mask, 0xF = 0b1111) */
 		value = (value << 4) | (byte & 0xF);
 	}
 
@@ -646,7 +655,7 @@ void USART1_RX_IRQHandler(void)
 	/* Set dbprint_rxdata when a special character is received (~ full line received) */
 	if (dbprint_rx_buffer[i - 1] == '\r' || dbprint_rx_buffer[i - 1] == '\f')
 	{
-		dbprint_rxdata = 1;
+		dbprint_rxdata = true;
 		dbprint_rx_buffer[i - 1] = '\0'; /* Overwrite CR or LF character */
 		i = 0;
 	}
@@ -654,7 +663,7 @@ void USART1_RX_IRQHandler(void)
 	/* Set dbprint_rxdata when the buffer is full */
 	if ( i >= DBPRINT_BUFFER_SIZE - 2 )
 	{
-		dbprint_rxdata = 1;
+		dbprint_rxdata = true;
 		dbprint_rx_buffer[i] = '\0'; /* Do not overwrite last character */
 		i = 0;
 	}
