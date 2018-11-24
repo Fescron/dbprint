@@ -249,7 +249,7 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 			dbpointer->ROUTE |= USART_ROUTE_TXPEN | USART_ROUTE_RXPEN | USART_ROUTE_LOCATION_DEFAULT;
 	}
 
-	/* Enable interrupts if necessary and print welcome string */
+	/* Enable interrupts if necessary and print welcome string (and make two times an alert sound in the console) */
 	if (interrupts)
 	{
 		/* Initialize USART interrupts */
@@ -277,15 +277,15 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 		}
 
 		/* Print welcome string */
-		dbprintln("\a\r\f### UART initialized (interrupt mode) ###");
+		dbprintln("\a\a\r\f### UART initialized (interrupt mode) ###");
 
 		/* Set TX Complete Interrupt Flag (transmission has completed and no more data
 		* is available in the transmit buffer) */
 		USART_IntSet(dbpointer, USART_IFS_TXC);
 	}
-	/* Print welcome string if not in interrupt mode */
+	/* Print welcome string (and make two times an alert sound in the console) if not in interrupt mode */
 	else {
-		dbprintln("\a\r\f### UART initialized (no interrupts) ###");
+		dbprintln("\a\a\r\f### UART initialized (no interrupts) ###");
 	}
 }
 
