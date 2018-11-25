@@ -6,6 +6,8 @@
 
 **NOTE:** There are a lot of useful simple code-examples at https://github.com/SiliconLabs/peripheral_examples
 
+------
+
 ## 1 - Installation instructions (Simplicity Studo v4)
 
 ### 1.1 - Add "dbprint.c" and "dbprint.h" to your project
@@ -35,6 +37,8 @@ In any *Simplicity Studio example project* (like **blink**) all of the header fi
 ```C
 #include "dbprint.h"
 ```
+
+------
 
 ## 2 - Methods
 
@@ -89,6 +93,7 @@ dbprintInt(10, intvalue); /* Print "signed int" value in decimal notation (base-
 dbprintInt(16, intvalue); /* Print "signed int" value in hexadecimal notation (base-16) */
 ```
 
+------
 
 ## 3 - Alternate locations of pins
 
@@ -106,6 +111,7 @@ If you use **dbprint** you don't really need to worry about this but you need to
 | US1_RX   | PC1  |      | PD6  | PD6  | PA0  | PC2  |      |
 | US1_TX   | PC0  |      | PD7  | PD7  | PF2  | PC1  |      |
 
+------
 
 ## 4 - Code examples for when dbprint is in "interrupt mode"
 
