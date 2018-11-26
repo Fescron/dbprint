@@ -14,16 +14,16 @@
  *   any purpose, you must agree to the terms of that agreement.
  *
  *   Code was obtained from examples from "https://github.com/SiliconLabs/peripheral_examples":
- *      - usart/async_polled/src/main_s0.c (version 0.0.1)
+ *      - usart/async_polled/src/main_s0.c    (version 0.0.1)
  *      - usart/async_interrupt/src/main_s0.c (version 0.0.1)
  *
  * ******************************************************************************
  *
  * @note
- *   Energy profiler seems to use VCOM (on-board UART to USB converter)somehow,
+ *   The Energy profiler in Simplicity Studio seems to use VCOM (on-board UART to USB converter)somehow,
  *   change to using an external UART adapter if both the energy profiler and UART debugging
  *   are necessary at the same time!
- *   If the energy profiler was used and this define was switched, physically replug the board
+ *   If the energy profiler was used and the code functionality was switched, physically replug the board
  *   to make sure VCOM UART starts working again!
  *
  * ******************************************************************************
@@ -41,10 +41,34 @@
  *
  * ******************************************************************************
  *
- * @note
- *   Debug using VCOM, no interrupts:
+ *  @section Alternate Functionality Pinout
+ *
+ *      Location |  #0  |  #1  |  #2  |  #3  |  #4  |  #5  |  #6  |     ||===================||
+ *      -----------------------------------------------------------     || baudrate = 115200 ||
+ *      US0_RX   | PE11 |      | PC10 | PE12 | PB08 | PC01 | PC01 |     || 8 databits        ||
+ *      US0_TX   | PE10 |      |      | PE13 | PB07 | PC00 | PC00 |     || 1 stopbit         ||
+ *      -----------------------------------------------------------     || no parity         ||
+ *      US1_RX   | PC01 |      | PD06 | PD06 | PA00 | PC02 |      |     ||===================||
+ *      US1_TX   | PC00 |      | PD07 | PD07 | PF02 | PC01 |      |
+ *
+ *      VCOM: USART1 #4 (USART0 not possible) RX: PA0 -- TX: PF2
+ *
+ * ******************************************************************************
+ *
+ * @section Debug using VCOM (no interrupt functionality)
  *
  *   dbprint_INIT(USART1, 4, true, false);
+ *
+ * ******************************************************************************
+ *
+ * @section Writing debug statements
+ *
+ *   Debug statements in the code and their severity can be the following:
+ *     - dbprintln("INFO: ...");   Some info when the code executes normally.
+ *     - dbprintln("WARN: ...");   The next time some code is executed a critical error may arise.
+ *     - dbprintln("CRIT: ...");   Critical error, code execution can be put on hold.
+ *     - dbprintln("> ...");       Program is in a "main state/method".
+ *     - dbprintln(">> ...");      Program is in a "sub-state/method".
  *
  * ******************************************************************************
  *
@@ -92,18 +116,6 @@ volatile char dbprint_tx_buffer[DBPRINT_BUFFER_SIZE];
  * @brief
  *   Initialize USARTx.
  *
- * @note
- *   Alternate Functionality Pinout:
- *      Location |  #0  |  #1  |  #2  |  #3  |  #4  |  #5  |  #6  |     ||===================||
- *      -----------------------------------------------------------     || baudrate = 115200 ||
- *      US0_RX   | PE11 |      | PC10 | PE12 | PB08 | PC01 | PC01 |     || 8 databits        ||
- *      US0_TX   | PE10 |      |      | PE13 | PB07 | PC00 | PC00 |     || 1 stopbit         ||
- *      -----------------------------------------------------------     || no parity         ||
- *      US1_RX   | PC01 |      | PD06 | PD06 | PA00 | PC02 |      |     ||===================||
- *      US1_TX   | PC00 |      | PD07 | PD07 | PF02 | PC01 |      |
- *
- *      VCOM: USART1 #4 (USART0 not possible) RX: PA0 -- TX: PF2
- *
  * @param[in] pointer
  *   Pointer to USARTx.
  *
@@ -125,17 +137,19 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 
 	/*
 	 * USART_INITASYNC_DEFAULT:
-	 * config.enable = usartEnable			// Specifies whether TX and/or RX is enabled when initialization is completed (Enable RX/TX when initialization is complete).
-	 * config.refFreq = 0					// USART/UART reference clock assumed when configuring baud rate setup (0 = Use current configured reference clock for configuring baud rate).
-	 * config.baudrate = 115200				// Desired baudrate (115200 bits/s).
-	 * config.oversampling = usartOVS16		// Oversampling used (16x oversampling).
-	 * config.databits = usartDatabits8		// Number of data bits in frame (8 data bits).
-	 * config.parity = usartNoParity		// Parity mode to use (no parity).
-	 * config.stopbits = usartStopbits1		// Number of stop bits to use (1 stop bit).
-	 * config.mvdis = false					// Majority Vote Disable for 16x, 8x and 6x oversampling modes (Do not disable majority vote).
-	 * config.prsRxEnable = false			// Enable USART Rx via PRS (Not USART PRS input mode).
-	 * config.prsRxCh = 0					// Select PRS channel for USART Rx. (Only valid if prsRxEnable is true - PRS channel 0).
-	 * config.autoCsEnable = false			// Auto CS enabling (Auto CS functionality enable/disable switch - disabled).
+	 *   config.enable = usartEnable	   // Specifies whether TX and/or RX is enabled when initialization is completed
+	 *   								   // (Enable RX/TX when initialization is complete).
+	 *   config.refFreq = 0				   // USART/UART reference clock assumed when configuring baud rate setup
+	 * 									   // (0 = Use current configured reference clock for configuring baud rate).
+	 *   config.baudrate = 115200		   // Desired baudrate (115200 bits/s).
+	 *   config.oversampling = usartOVS16  // Oversampling used (16x oversampling).
+	 *   config.databits = usartDatabits8  // Number of data bits in frame (8 data bits).
+	 *   config.parity = usartNoParity	   // Parity mode to use (no parity).
+	 *   config.stopbits = usartStopbits1  // Number of stop bits to use (1 stop bit).
+	 *   config.mvdis = false			   // Majority Vote Disable for 16x, 8x and 6x oversampling modes (Do not disable majority vote).
+	 *   config.prsRxEnable = false		   // Enable USART Rx via PRS (Not USART PRS input mode).
+	 *   config.prsRxCh = 0				   // Select PRS channel for USART Rx. (Only valid if prsRxEnable is true - PRS channel 0).
+	 *   config.autoCsEnable = false	   // Auto CS enabling (Auto CS functionality enable/disable switch - disabled).
 	 */
 
 	USART_InitAsync_TypeDef config = USART_INITASYNC_DEFAULT;
@@ -249,7 +263,7 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 			dbpointer->ROUTE |= USART_ROUTE_TXPEN | USART_ROUTE_RXPEN | USART_ROUTE_LOCATION_DEFAULT;
 	}
 
-	/* Enable interrupts if necessary and print welcome string (and make two times an alert sound in the console) */
+	/* Enable interrupts if necessary and print welcome string (and make an alert sound in the console) */
 	if (interrupts)
 	{
 		/* Initialize USART interrupts */
@@ -283,7 +297,7 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 		* is available in the transmit buffer) */
 		USART_IntSet(dbpointer, USART_IFS_TXC);
 	}
-	/* Print welcome string (and make two times an alert sound in the console) if not in interrupt mode */
+	/* Print welcome string (and make an alert sound in the console) if not in interrupt mode */
 	else {
 		dbprintln("\a\r\f### UART initialized (no interrupts) ###");
 	}
@@ -564,7 +578,7 @@ void uint32_to_charDec (char *buf, uint32_t value)
  *****************************************************************************/
 uint32_t charDec_to_uint32 (char *buf)
 {
-	/* TODO: Check max amount of chars fit in uint32_t? */
+	/* TODO: Add check max amount of chars fit in uint32_t? */
 
 	uint32_t value = 0;
 
@@ -609,7 +623,8 @@ uint32_t charHex_to_uint32 (char *buf)
 	 *
 	 */
 
-	/* TODO: Maybe fix so "0x" prefixes can be omitted? Check max amount of chars fit in uint32_t? */
+	/* TODO: Maybe fix so "0x" prefixes can be omitted?
+	 *       Add check max amount of chars fit in uint32_t? */
 
 	uint32_t value = 0;
 

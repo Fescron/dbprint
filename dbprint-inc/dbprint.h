@@ -6,7 +6,7 @@
  ******************************************************************************/
 
 
-/* include guards prevent multiple inclusions of the same header */
+/* Include guards prevent multiple inclusions of the same header */
 #ifndef _DBPRINT_H_
 #define _DBPRINT_H_
 
