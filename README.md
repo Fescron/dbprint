@@ -56,8 +56,7 @@ void dbprintln(char *message);
 
 void dbprintInt(int32_t value);
 void dbprintInt_hex(int32_t value);
-```
-```C
+
 void uint32_to_charHex(char *buf, uint32_t value, bool spacing);
 void uint32_to_charDec(char *buf, uint32_t value);
 uint32_t charDec_to_uint32(char *buf);
