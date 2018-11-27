@@ -56,7 +56,8 @@ void dbprintln(char *message);
 
 void dbprintUint(uint32_t value);
 void dbprintUint_hex(uint32_t value);
-void dbprintInt(uint8_t radix, int32_t value);
+void dbprintInt(int32_t value);
+void dbprintInt_hex(int32_t value);
 ```
 ```C
 void uint32_to_charHex(char *buf, uint32_t value, bool spacing);
@@ -79,8 +80,8 @@ dbAlert(); /* Let the console make an "alert" (bell) sound */
 dbClear(); /* Clear the console window */
 ```
 ```C
-dbprint("Hello World");   /* Print text to uart */
-dbprintln("Hello World"); /* Print text to uart and go to the next line */
+dbprint("Hello World");     /* Print text to uart */
+dbprintln("Hello World");   /* Print text to uart and go to the next line */
 ```
 ```C
 uint32_t uintValue = 42;
@@ -89,8 +90,8 @@ dbprintUint_hex(uintValue); /* Print "unsigned int" value in hexadecimal notatio
 ```
 ```C
 int32_t intvalue = 42;
-dbprintInt(10, intvalue); /* Print "signed int" value in decimal notation (base-10) */
-dbprintInt(16, intvalue); /* Print "signed int" value in hexadecimal notation (base-16) */
+dbprintInt(intValue);       /* Print "signed int" value in decimal notation */
+dbprintInt_hex(intValue);   /* Print "signed int" value in hexadecimal notation */
 ```
 
 ------
