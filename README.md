@@ -46,7 +46,7 @@ In any *Simplicity Studio example project* (like **blink**) all of the header fi
 
 **Fixed baudrate = 115200 (8 databits, 1 stopbit, no parity)**.
 ```C
-void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool interrupts);
+void dbprint_INIT(USART_TypeDef* pointer, uint8_t location, bool vcom, bool interrupts);
 
 void dbAlert();
 void dbClear();
