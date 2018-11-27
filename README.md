@@ -1,6 +1,6 @@
 # dbprint
 
-**DeBugPrint** is a homebrew minimal low-level `println/printf` replacement. It can be used to to print text/values to `uart`without a lot of external libraries. The end goal is to use no exernal libraries apart from the ones specific to the microcontroller.
+**DeBugPrint** is a homebrew minimal low-level `println/printf` replacement. It can be used to to print text/values to `uart`without a lot of external libraries. The end goal was to use no exernal libraries (with methods like ```itoa```) apart from the ones specific to the microcontroller.
 
 **DeBugPrint** is originally designed for use on the `Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48)`.
 
@@ -54,8 +54,6 @@ void dbClear();
 void dbprint(char *message);
 void dbprintln(char *message);
 
-void dbprintUint(uint32_t value);
-void dbprintUint_hex(uint32_t value);
 void dbprintInt(int32_t value);
 void dbprintInt_hex(int32_t value);
 ```
@@ -80,18 +78,18 @@ dbAlert(); /* Let the console make an "alert" (bell) sound */
 dbClear(); /* Clear the console window */
 ```
 ```C
-dbprint("Hello World");     /* Print text to uart */
-dbprintln("Hello World");   /* Print text to uart and go to the next line */
+dbprint("Hello World");    /* Print text to uart */
+dbprintln("Hello World");  /* Print text to uart and go to the next line */
 ```
 ```C
 uint32_t uintValue = 42;
-dbprintUint(uintValue);     /* Print "unsigned int" value in decimal notation */
-dbprintUint_hex(uintValue); /* Print "unsigned int" value in hexadecimal notation */
+dbprintInt(uintValue);     /* Print "unsigned int" value in decimal notation */
+dbprintInt_hex(uintValue); /* Print "unsigned int" value in hexadecimal notation */
 ```
 ```C
-int32_t intvalue = 42;
-dbprintInt(intValue);       /* Print "signed int" value in decimal notation */
-dbprintInt_hex(intValue);   /* Print "signed int" value in hexadecimal notation */
+int32_t intvalue = -42;
+dbprintInt(intValue);      /* Print "signed int" value in decimal notation */
+dbprintInt_hex(intValue);  /* Print "signed int" value in hexadecimal notation */
 ```
 
 ------
