@@ -2,7 +2,7 @@
  * @file dbprint.c
  * @brief Homebrew println/printf replacement "DeBugPRINT".
  * @details Originally designed for use on the Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48).
- * @version 2.4
+ * @version 2.5
  * @author Brecht Van Eeckhoudt
  *
  * ******************************************************************************
@@ -41,6 +41,7 @@
  *   v2.2: Add parse functions, separated method for printing uint values in a separate one for DEC and HEX notation.
  *   v2.3: Updated documentation.
  *   v2.4: Fix notes.
+ *   v2.5: Separated method for printing int values in a separate one for DEC and HEX notation.
  *
  * ******************************************************************************
  *
@@ -404,21 +405,35 @@ void dbprintUint_hex (uint32_t value)
 
 /**************************************************************************//**
  * @brief
- *   Print a int32_t value to USARTx.
- *
- * @param[in] radix
- *   @li 10 - Resulting string will be in decimal notation.
- *   @li 16 - Resulting string will be in hexadecimal notation.
+ *   Print a int32_t value in decimal notation to USARTx.
  *
  * @param[in] value
  *   The int32_t value to print to USARTx.
  *****************************************************************************/
-void dbprintInt (uint8_t radix, int32_t value)
+void dbprintInt (int32_t value)
 {
 	/* TODO: stop using itoa */
 	char buffer[4];
 
-	__itoa(value, buffer, radix); /* int char* int */
+	__itoa(value, buffer, 10); /* int char* int */
+
+	dbprint(buffer);
+}
+
+
+/**************************************************************************//**
+ * @brief
+ *   Print a int32_t value in hexadecimal notation to USARTx.
+ *
+ * @param[in] value
+ *   The int32_t value to print to USARTx.
+ *****************************************************************************/
+void dbprintInt_hex (int32_t value)
+{
+	/* TODO: stop using itoa */
+	char buffer[4];
+
+	__itoa(value, buffer, 16); /* int char* int */
 
 	dbprint(buffer);
 }
