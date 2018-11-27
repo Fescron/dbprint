@@ -32,6 +32,7 @@ extern volatile char dbprint_tx_buffer[DBPRINT_BUFFER_SIZE];
 
 /* Prototypes */
 void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool interrupts);
+
 void dbAlert ();
 void dbClear ();
 
@@ -43,6 +44,7 @@ void dbprintInt_hex (int32_t value);
 
 void uint32_to_charHex (char *buf, uint32_t value, bool spacing);
 void uint32_to_charDec (char *buf, uint32_t value);
+
 uint32_t charDec_to_uint32 (char *buf);
 uint32_t charHex_to_uint32 (char *buf);
 

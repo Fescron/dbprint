@@ -97,15 +97,18 @@
  *
  * ******************************************************************************
  *
- * @section Bits, bytes, nibbles and integer value ranges
+ * @section Bits, bytes, nibbles and unsigned/signed integer value ranges
  *
- *   The following information can be kept in mind when working with hexadecimal characters.
  *     - 1 nibble = 4 bits (0b1111      = 0xF )
  *     - 1 byte   = 8 bits (0b1111 1111 = 0xFF)
  *
- *     - uint8_t  ~ unsigned char  = 1 byte  (0 - 255        or 0xFF)
- *     - uint16_t ~ unsigned short = 2 bytes (0 - 65535      or 0xFFFF)
- *     - uint32_t ~ unsigned int   = 4 bytes (0 - 4294967295 or 0xFFFFFFFF)
+ *     - uint8_t  ~ unsigned char  = 1 byte  (0 > 255           or 0xFF)
+ *     - uint16_t ~ unsigned short = 2 bytes (0 > 65 535        or 0xFFFF)
+ *     - uint32_t ~ unsigned int   = 4 bytes (0 > 4 294 967 295 or 0xFFFFFFFF)
+ *
+ *     - int8_t   ~ signed char    = 1 byte  (-128 > 127)
+ *     - int16_t  ~ signed short   = 2 bytes (-32 768 > 32 767)
+ *     - int32_t  ~ signed int     = 4 bytes (-2 147 483 648 > 2 147 483 647)
  *
  ******************************************************************************/
 
@@ -605,8 +608,6 @@ uint32_t charDec_to_uint32 (char *buf)
 			/* Given buffer can't fit in uint32_t */
 			return (0);
 		}
-
-
 	}
 
 	return (value);
