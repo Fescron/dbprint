@@ -2,7 +2,7 @@
  * @file dbprint.c
  * @brief Homebrew println/printf replacement "DeBugPRINT".
  * @details Originally designed for use on the Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48).
- * @version 2.3
+ * @version 2.4
  * @author Brecht Van Eeckhoudt
  *
  * ******************************************************************************
@@ -34,12 +34,13 @@
  *   Please check "https://github.com/Fescron/dbprint" to find the latest version of dbprint!
  *
  *   v1.0: "define" used to jump between VCOM or other mode, itoa (<stdlib.h>) used aswell as stdio.h
- *   v1.1: Separated printInt method in a separate function for printing "int32_t" and "uint32_t" values
- *   v1.2: Added more options to the initialize method (location selection & boolean if VCOM is used)
- *   v2.0: Restructure files to be used in other projects, added a lot more documentation, added "dbAlert" and "dbClear" methods
- *   v2.1: Add interrupt functionality
- *   v2.2: Add parse functions, separated method for printing uint values in a separate one for DEC and HEX notation
- *   v2.3: Update documentation
+ *   v1.1: Separated printInt method in a separate function for printing "int32_t" and "uint32_t" values.
+ *   v1.2: Added more options to the initialize method (location selection & boolean if VCOM is used).
+ *   v2.0: Restructure files to be used in other projects, added a lot more documentation, added "dbAlert" and "dbClear" methods.
+ *   v2.1: Add interrupt functionality.
+ *   v2.2: Add parse functions, separated method for printing uint values in a separate one for DEC and HEX notation.
+ *   v2.3: Updated documentation.
+ *   v2.4: Fix notes.
  *
  * ******************************************************************************
  *
@@ -111,7 +112,7 @@
 #include <stdlib.h> /* itoa TODO: get this away from here */
 
 
-/* Macro definitions that return a character */
+/* Macro definitions that return a character when given a value */
 #define TO_HEX(i) (i <= 9 ? '0' + i : 'A' - 10 + i) /* "?:" = ternary operator (return ['0' + i] if [i <= 9] = true, ['A' - 10 + i] if false) */
 #define TO_DEC(i) (i <= 9 ? '0' + i : '?') /* return "?" if out of range */
 
@@ -172,13 +173,13 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 	CMU_ClockEnable(cmuClock_GPIO, true);
 
 
-	/* Enable oscillator to USARTx modules
-	 * TODO: Optimize this!
-	 */
-	if (dbpointer == USART0) {
+	/* Enable oscillator to USARTx modules */
+	if (dbpointer == USART0)
+	{
 		CMU_ClockEnable(cmuClock_USART0, true);
 	}
-	else if (dbpointer == USART1) {
+	else if (dbpointer == USART1)
+	{
 		CMU_ClockEnable(cmuClock_USART1, true);
 	}
 
@@ -192,7 +193,8 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 
 
 	/* Set pin modes for UART TX and RX pins */
-	if (dbpointer == USART0) {
+	if (dbpointer == USART0)
+	{
 		switch (location)
 		{
 			case 0:
@@ -220,7 +222,8 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 				/* No default */
 		}
 	}
-	else if (dbpointer == USART1) {
+	else if (dbpointer == USART1)
+	{
 		switch (location)
 		{
 			case 0:
@@ -312,7 +315,8 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 		USART_IntSet(dbpointer, USART_IFS_TXC);
 	}
 	/* Print welcome string (and make an alert sound in the console) if not in interrupt mode */
-	else {
+	else
+	{
 		dbprintln("\a\r\f### UART initialized (no interrupts) ###");
 	}
 }
@@ -456,8 +460,6 @@ void dbprintln (char *message)
  *****************************************************************************/
 void uint32_to_charHex (char *buf, uint32_t value, bool spacing)
 {
-	/* TODO: Maybe simplify this (based on charHex_to_uint32) */
-
 	/* Checking just in case */
 	if (value <= 0xFFFFFFFF)
 	{
@@ -519,8 +521,6 @@ void uint32_to_charHex (char *buf, uint32_t value, bool spacing)
  *****************************************************************************/
 void uint32_to_charDec (char *buf, uint32_t value)
 {
-	/* TODO: Maybe simplify this (based on charDec_to_uint32) */
-
 	/* Checking just in case */
 	if (value <= 0xFFFFFFFF)
 	{
@@ -531,7 +531,7 @@ void uint32_to_charDec (char *buf, uint32_t value)
 		}
 		else
 		{
-			/* MAX uint32_t value = FFFFFFFFh = 4294967295d (10 chars in dec) */
+			/* MAX uint32_t value = FFFFFFFFh = 4294967295d (10 decimal chars) */
 			char backwardsBuf[10];
 
 			uint32_t calcval = value;
@@ -540,7 +540,8 @@ void uint32_to_charDec (char *buf, uint32_t value)
 
 
 			/* Loop until the value is zero (separate characters 0-9) and calculate length */
-			while (calcval) {
+			while (calcval)
+			{
 				uint32_t rem = calcval % 10;
 				backwardsBuf[length] = TO_DEC(rem); /* Convert to ASCII character */
 				length++;
@@ -582,8 +583,6 @@ void uint32_to_charDec (char *buf, uint32_t value)
  *****************************************************************************/
 uint32_t charDec_to_uint32 (char *buf)
 {
-	/* TODO: Add check max amount of chars fit in uint32_t? */
-
 	/* Value to eventually return */
 	uint32_t value = 0;
 
@@ -593,9 +592,20 @@ uint32_t charDec_to_uint32 (char *buf)
 		/* Get current character, increment afterwards */
 		uint8_t byte = *buf++;
 
-		/* Convert the ASCII (decimal) character to the representing decimal value
-		 * and add it to the value (which is multiplied by 10 for each position) */
-		value = (value * 10) + (byte - '0');
+		/* Check if the next value we need to add can fit in a uint32_t */
+		if ( (value <= 0xFFFFFFF) && ((byte - '0') <= 0xF) )
+		{
+			/* Convert the ASCII (decimal) character to the representing decimal value
+			 * and add it to the value (which is multiplied by 10 for each position) */
+			value = (value * 10) + (byte - '0');
+		}
+		else
+		{
+			/* Given buffer can't fit in uint32_t */
+			return (0);
+		}
+
+
 	}
 
 	return (value);
@@ -609,6 +619,7 @@ uint32_t charDec_to_uint32 (char *buf)
  * @note
  *   If the input is not a string (ex.: "00120561") but a char array,
  *   the input buffer (array) needs to end with NULL ('\0')!
+ *   The input string can't have the prefix "0x".
  *
  * @param[in] buf
  *   The hexadecimal string to convert to a uint32_t value.
@@ -618,9 +629,6 @@ uint32_t charDec_to_uint32 (char *buf)
  *****************************************************************************/
 uint32_t charHex_to_uint32 (char *buf)
 {
-	/* TODO: Maybe fix so "0x" prefixes can be omitted?
-	 *       Add check max amount of chars fit in uint32_t? */
-
 	/* Value to eventually return */
 	uint32_t value = 0;
 
@@ -630,14 +638,24 @@ uint32_t charHex_to_uint32 (char *buf)
 		/* Get current character, increment afterwards */
 		uint8_t byte = *buf++;
 
-		/* Convert the hex character to the 4-bit equivalent number using the ASCII table indexes */
+		/* Convert the hex character to the 4-bit equivalent
+		 * number using the ASCII table indexes */
 		if (byte >= '0' && byte <= '9') byte = byte - '0';
 		else if (byte >= 'a' && byte <='f') byte = byte - 'a' + 10;
 		else if (byte >= 'A' && byte <='F') byte = byte - 'A' + 10;
 
-		/* Shift one nibble (4 bits) to make space for a new digit
-		 * and add the 4 bits (ANDing with a mask, 0xF = 0b1111) */
-		value = (value << 4) | (byte & 0xF);
+		/* Check if the next byte we need to add can fit in a uint32_t */
+		if ( (value <= 0xFFFFFFF) && (byte <= 0xF) )
+		{
+			/* Shift one nibble (4 bits) to make space for a new digit
+			 * and add the 4 bits (ANDing with a mask, 0xF = 0b1111) */
+			value = (value << 4) | (byte & 0xF);
+		}
+		else
+		{
+			/* Given buffer can't fit in uint32_t */
+			return (0);
+		}
 	}
 
 	return (value);
@@ -664,7 +682,7 @@ void USART1_RX_IRQHandler(void)
 	dbprint_rx_buffer[i++] = USART_Rx(dbpointer);
 
 	/* Set dbprint_rxdata when a special character is received (~ full line received) */
-	if (dbprint_rx_buffer[i - 1] == '\r' || dbprint_rx_buffer[i - 1] == '\f')
+	if ( (dbprint_rx_buffer[i - 1] == '\r') || (dbprint_rx_buffer[i - 1] == '\f') )
 	{
 		dbprint_rxdata = true;
 		dbprint_rx_buffer[i - 1] = '\0'; /* Overwrite CR or LF character */
@@ -672,7 +690,7 @@ void USART1_RX_IRQHandler(void)
 	}
 
 	/* Set dbprint_rxdata when the buffer is full */
-	if ( i >= DBPRINT_BUFFER_SIZE - 2 )
+	if (i >= (DBPRINT_BUFFER_SIZE - 2))
 	{
 		dbprint_rxdata = true;
 		dbprint_rx_buffer[i] = '\0'; /* Do not overwrite last character */
@@ -702,7 +720,7 @@ void USART1_TX_IRQHandler(void)
 	{
 		/* Index is smaller than the maximum buffer size and
 		 * the current item to print is not "NULL" (\0) */
-		if (i < DBPRINT_BUFFER_SIZE && dbprint_tx_buffer[i] != '\0')
+		if ( (i < DBPRINT_BUFFER_SIZE) && (dbprint_tx_buffer[i] != '\0') )
 		{
 			/* Transmit byte at current index and increment index */
 			USART_Tx(dbpointer, dbprint_tx_buffer[i++]);
