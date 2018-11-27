@@ -8,6 +8,7 @@
  * ******************************************************************************
  *
  * @section License
+ *
  *   Some methods use code obtained from examples from Silicon Labs,
  *   these sections are licensed under the Silabs License Agreement. See the file
  *   "Silabs_License_Agreement.txt" for details. Before using this software for
@@ -29,6 +30,7 @@
  * ******************************************************************************
  *
  * @section Versions
+ *
  *   Please check "https://github.com/Fescron/dbprint" to find the latest version of dbprint!
  *
  *   v1.0: "define" used to jump between VCOM or other mode, itoa (<stdlib.h>) used aswell as stdio.h
@@ -89,6 +91,18 @@
  *     Static global variable or function:
  *         The variable or function is only "seen" in the file it's declared in.
  *
+ * ******************************************************************************
+ *
+ * @section Bits, bytes, nibbles and integer value ranges
+ *
+ *   The following information can be kept in mind when working with hexadecimal characters.
+ *     - 1 nibble = 4 bits (0b1111      = 0xF )
+ *     - 1 byte   = 8 bits (0b1111 1111 = 0xFF)
+ *
+ *     - uint8_t  ~ unsigned char  = 1 byte  (0 - 255        or 0xFF)
+ *     - uint16_t ~ unsigned short = 2 bytes (0 - 65535      or 0xFFFF)
+ *     - uint32_t ~ unsigned int   = 4 bytes (0 - 4294967295 or 0xFFFFFFFF)
+ *
  ******************************************************************************/
 
 
@@ -137,19 +151,19 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 
 	/*
 	 * USART_INITASYNC_DEFAULT:
-	 *   config.enable = usartEnable	   // Specifies whether TX and/or RX is enabled when initialization is completed
-	 *   								   // (Enable RX/TX when initialization is complete).
-	 *   config.refFreq = 0				   // USART/UART reference clock assumed when configuring baud rate setup
-	 * 									   // (0 = Use current configured reference clock for configuring baud rate).
-	 *   config.baudrate = 115200		   // Desired baudrate (115200 bits/s).
+	 *   config.enable = usartEnable       // Specifies whether TX and/or RX is enabled when initialization is completed
+	 *                                     // (Enable RX/TX when initialization is complete).
+	 *   config.refFreq = 0                // USART/UART reference clock assumed when configuring baud rate setup
+	 *                                     // (0 = Use current configured reference clock for configuring baud rate).
+	 *   config.baudrate = 115200          // Desired baudrate (115200 bits/s).
 	 *   config.oversampling = usartOVS16  // Oversampling used (16x oversampling).
 	 *   config.databits = usartDatabits8  // Number of data bits in frame (8 data bits).
-	 *   config.parity = usartNoParity	   // Parity mode to use (no parity).
+	 *   config.parity = usartNoParity     // Parity mode to use (no parity).
 	 *   config.stopbits = usartStopbits1  // Number of stop bits to use (1 stop bit).
-	 *   config.mvdis = false			   // Majority Vote Disable for 16x, 8x and 6x oversampling modes (Do not disable majority vote).
-	 *   config.prsRxEnable = false		   // Enable USART Rx via PRS (Not USART PRS input mode).
-	 *   config.prsRxCh = 0				   // Select PRS channel for USART Rx. (Only valid if prsRxEnable is true - PRS channel 0).
-	 *   config.autoCsEnable = false	   // Auto CS enabling (Auto CS functionality enable/disable switch - disabled).
+	 *   config.mvdis = false              // Majority Vote Disable for 16x, 8x and 6x oversampling modes (Do not disable majority vote).
+	 *   config.prsRxEnable = false        // Enable USART Rx via PRS (Not USART PRS input mode).
+	 *   config.prsRxCh = 0                // Select PRS channel for USART Rx. (Only valid if prsRxEnable is true - PRS channel 0).
+	 *   config.autoCsEnable = false       // Auto CS enabling (Auto CS functionality enable/disable switch - disabled).
 	 */
 
 	USART_InitAsync_TypeDef config = USART_INITASYNC_DEFAULT;
@@ -182,25 +196,25 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 		switch (location)
 		{
 			case 0:
-				GPIO_PinModeSet(gpioPortE, 11, gpioModeInput, 0);	/* RX */
-				GPIO_PinModeSet(gpioPortE, 10, gpioModePushPull, 1);/* TX */
+				GPIO_PinModeSet(gpioPortE, 11, gpioModeInput, 0);    /* RX */
+				GPIO_PinModeSet(gpioPortE, 10, gpioModePushPull, 1); /* TX */
 				break;
 			case 2:
-				GPIO_PinModeSet(gpioPortC, 10, gpioModeInput, 0);	/* RX */
+				GPIO_PinModeSet(gpioPortC, 10, gpioModeInput, 0);    /* RX */
 				/* No TX pin in this mode */
 				break;
 			case 3:
-				GPIO_PinModeSet(gpioPortE, 12, gpioModeInput, 0);	/* RX */
-				GPIO_PinModeSet(gpioPortE, 13, gpioModePushPull, 1);/* TX */
+				GPIO_PinModeSet(gpioPortE, 12, gpioModeInput, 0);    /* RX */
+				GPIO_PinModeSet(gpioPortE, 13, gpioModePushPull, 1); /* TX */
 				break;
 			case 4:
-				GPIO_PinModeSet(gpioPortB, 8, gpioModeInput, 0);	/* RX */
-				GPIO_PinModeSet(gpioPortB, 7, gpioModePushPull, 1); /* TX */
+				GPIO_PinModeSet(gpioPortB, 8, gpioModeInput, 0);     /* RX */
+				GPIO_PinModeSet(gpioPortB, 7, gpioModePushPull, 1);  /* TX */
 				break;
 			case 5:
 			case 6:
-				GPIO_PinModeSet(gpioPortC, 1, gpioModeInput, 0);	/* RX */
-				GPIO_PinModeSet(gpioPortC, 0, gpioModePushPull, 1); /* TX */
+				GPIO_PinModeSet(gpioPortC, 1, gpioModeInput, 0);     /* RX */
+				GPIO_PinModeSet(gpioPortC, 0, gpioModePushPull, 1);  /* TX */
 				break;
 			/* default: */
 				/* No default */
@@ -210,21 +224,21 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 		switch (location)
 		{
 			case 0:
-				GPIO_PinModeSet(gpioPortC, 1, gpioModeInput, 0);	/* RX */
-				GPIO_PinModeSet(gpioPortC, 0, gpioModePushPull, 1); /* TX */
+				GPIO_PinModeSet(gpioPortC, 1, gpioModeInput, 0);     /* RX */
+				GPIO_PinModeSet(gpioPortC, 0, gpioModePushPull, 1);  /* TX */
 				break;
 			case 2:
 			case 3:
-				GPIO_PinModeSet(gpioPortD, 6, gpioModeInput, 0);	/* RX */
-				GPIO_PinModeSet(gpioPortD, 7, gpioModePushPull, 1); /* TX */
+				GPIO_PinModeSet(gpioPortD, 6, gpioModeInput, 0);     /* RX */
+				GPIO_PinModeSet(gpioPortD, 7, gpioModePushPull, 1);  /* TX */
 				break;
 			case 4:
-				GPIO_PinModeSet(gpioPortA, 0, gpioModeInput, 0);	/* RX */
-				GPIO_PinModeSet(gpioPortF, 2, gpioModePushPull, 1); /* TX */
+				GPIO_PinModeSet(gpioPortA, 0, gpioModeInput, 0);     /* RX */
+				GPIO_PinModeSet(gpioPortF, 2, gpioModePushPull, 1);  /* TX */
 				break;
 			case 5:
-				GPIO_PinModeSet(gpioPortC, 2, gpioModeInput, 0);	/* RX */
-				GPIO_PinModeSet(gpioPortC, 1, gpioModePushPull, 1); /* TX */
+				GPIO_PinModeSet(gpioPortC, 2, gpioModeInput, 0);     /* RX */
+				GPIO_PinModeSet(gpioPortC, 1, gpioModePushPull, 1);  /* TX */
 				break;
 			/* default: */
 				/* No default */
@@ -427,7 +441,7 @@ void dbprintln (char *message)
 
 /**************************************************************************//**
  * @brief
- *   Convert a uint32_t value to HEX char notation (string).
+ *   Convert a uint32_t value to a hexadecimal char array (string).
  *
  * @param[out] buf
  *   The buffer to put the resulting string in.
@@ -443,16 +457,6 @@ void dbprintln (char *message)
 void uint32_to_charHex (char *buf, uint32_t value, bool spacing)
 {
 	/* TODO: Maybe simplify this (based on charHex_to_uint32) */
-
-	/*
-	 * 1 nibble = 4 bits (0b1111      = 0xF )
-	 * 1 byte   = 8 bits (0b1111 1111 = 0xFF)
-	 *
-	 * uint8_t  ~ unsigned char		1 byte  (0 - 255 or 0xFF)
-	 * uint16_t ~ unsigned short	2 bytes (0 - 65535 or 0xFFFF)
-	 * uint32_t ~ unsigned int		4 bytes (0 - 4294967295 or 0xFFFFFFFF)
-	 *
-	 */
 
 	/* Checking just in case */
 	if (value <= 0xFFFFFFFF)
@@ -504,7 +508,7 @@ void uint32_to_charHex (char *buf, uint32_t value, bool spacing)
 
 /**************************************************************************//**
  * @brief
- *   Convert a uint32_t value to DEC char notation (string)
+ *   Convert a uint32_t value to a decimal char array (string).
  *
  * @param[out] buf
  *   The buffer to put the resulting string in.
@@ -571,7 +575,7 @@ void uint32_to_charDec (char *buf, uint32_t value)
  *   the input buffer (array) needs to end with NULL ('\0')!
  *
  * @param[in] buf
- *   The decimal string to convert in a uint32_t value.
+ *   The decimal string to convert to a uint32_t value.
  *
  * @return
  *   The resulting uint32_t value.
@@ -580,6 +584,7 @@ uint32_t charDec_to_uint32 (char *buf)
 {
 	/* TODO: Add check max amount of chars fit in uint32_t? */
 
+	/* Value to eventually return */
 	uint32_t value = 0;
 
 	/* Loop until buffer is empty */
@@ -606,26 +611,17 @@ uint32_t charDec_to_uint32 (char *buf)
  *   the input buffer (array) needs to end with NULL ('\0')!
  *
  * @param[in] buf
- *   The hexadecimal string to convert in a uint32_t value.
+ *   The hexadecimal string to convert to a uint32_t value.
  *
  * @return
  *   The resulting uint32_t value.
  *****************************************************************************/
 uint32_t charHex_to_uint32 (char *buf)
 {
-	/*
-	 * 1 nibble = 4 bits (0b1111      = 0xF )
-	 * 1 byte   = 8 bits (0b1111 1111 = 0xFF)
-	 *
-	 * uint8_t  ~ unsigned char		1 byte  (0 - 255 or 0xFF)
-	 * uint16_t ~ unsigned short	2 bytes (0 - 65535 or 0xFFFF)
-	 * uint32_t ~ unsigned int		4 bytes (0 - 4294967295 or 0xFFFFFFFF)
-	 *
-	 */
-
 	/* TODO: Maybe fix so "0x" prefixes can be omitted?
 	 *       Add check max amount of chars fit in uint32_t? */
 
+	/* Value to eventually return */
 	uint32_t value = 0;
 
 	/* Loop until buffer is empty */
@@ -634,8 +630,8 @@ uint32_t charHex_to_uint32 (char *buf)
 		/* Get current character, increment afterwards */
 		uint8_t byte = *buf++;
 
-		/* Convert the hex character to the 4bit equivalent number using the ASCII table indexes */
-		if (byte >= '0' && byte <= '9')byte = byte - '0';
+		/* Convert the hex character to the 4-bit equivalent number using the ASCII table indexes */
+		if (byte >= '0' && byte <= '9') byte = byte - '0';
 		else if (byte >= 'a' && byte <='f') byte = byte - 'a' + 10;
 		else if (byte >= 'A' && byte <='F') byte = byte - 'A' + 10;
 
