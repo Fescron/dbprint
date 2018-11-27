@@ -2,7 +2,7 @@
  * @file dbprint.c
  * @brief Homebrew println/printf replacement "DeBugPRINT".
  * @details Originally designed for use on the Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48).
- * @version 2.5
+ * @version 3.0
  * @author Brecht Van Eeckhoudt
  *
  * ******************************************************************************
@@ -42,6 +42,8 @@
  *   v2.3: Updated documentation.
  *   v2.4: Fix notes.
  *   v2.5: Separated method for printing int values in a separate one for DEC and HEX notation.
+ *   v2.6: Stop using itoa (<stdlib.h>) in all methods.
+ *   v3.0: Simplify number printing, stop using separate methods for uint and int values.
  *
  * ******************************************************************************
  *
@@ -109,8 +111,6 @@
 
 
 #include "dbprint.h"
-
-#include <stdlib.h> /* itoa TODO: get this away from here */
 
 
 /* Macro definitions that return a character when given a value */
@@ -374,68 +374,54 @@ void dbprint (char *message)
 
 /**************************************************************************//**
  * @brief
- *   Print a uint32_t value in decimal notation to USARTx.
+ *   Print a number in decimal notation to USARTx.
  *
  * @param[in] value
- *   The uint32_t value to print to USARTx.
+ *   The number to print to USARTx.
+ *   This can be of type "uint32_t" or "int32_t".
  *****************************************************************************/
-void dbprintUint (uint32_t value)
+void dbprintInt (int32_t value)
 {
-	char decchar[10]; /* Needs to be 10 */
-	uint32_to_charDec(decchar, value);
+	/* Buffer to put the char array in (Needs to be 10) */
+	char decchar[10];
+
+	/* Convert a negative number to a positive one and print the "-" */
+	if (value < 0)
+	{
+		/* Negative of value = flip all bits, +1
+		 *   bitwise logic: "~" = "NOT" */
+		uint32_t negativeValue = (~value) + 1;
+
+		dbprint("-");
+
+		/* Convert the value */
+		uint32_to_charDec(decchar, negativeValue);
+	}
+	else
+	{
+		/* Convert the value */
+		uint32_to_charDec(decchar, value);
+	}
+
+	/* Print the buffer */
 	dbprint(decchar);
 }
 
 
 /**************************************************************************//**
  * @brief
- *   Print a uint32_t value in hexadecimal notation to USARTx.
+ *   Print a number in hexadecimal notation to USARTx.
  *
  * @param[in] value
- *   The uint32_t value to print to USARTx.
+ *   The number to print to USARTx.
+ *   This can be of type "uint32_t" or "int32_t".
  *****************************************************************************/
-void dbprintUint_hex (uint32_t value)
+void dbprintInt_hex (int32_t value)
 {
 	char hexchar[9]; /* Needs to be 9 */
 	uint32_to_charHex(hexchar, value, true); /* true: add spacing between eight HEX chars */
 	dbprint("0x");
 	dbprint(hexchar);
-}
-
-
-/**************************************************************************//**
- * @brief
- *   Print a int32_t value in decimal notation to USARTx.
- *
- * @param[in] value
- *   The int32_t value to print to USARTx.
- *****************************************************************************/
-void dbprintInt (int32_t value)
-{
-	/* TODO: stop using itoa */
-	char buffer[4];
-
-	__itoa(value, buffer, 10); /* int char* int */
-
-	dbprint(buffer);
-}
-
-
-/**************************************************************************//**
- * @brief
- *   Print a int32_t value in hexadecimal notation to USARTx.
- *
- * @param[in] value
- *   The int32_t value to print to USARTx.
- *****************************************************************************/
-void dbprintInt_hex (int32_t value)
-{
-	/* TODO: stop using itoa */
-	char buffer[4];
-
-	__itoa(value, buffer, 16); /* int char* int */
-
-	dbprint(buffer);
 }
 
 

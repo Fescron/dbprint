@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @file dbprint.h
  * @brief Homebrew println/printf replacement "DeBugPRINT".
- * @version 2.5
+ * @version 3.0
  * @author Brecht Van Eeckhoudt
  ******************************************************************************/
 
@@ -38,8 +38,6 @@ void dbClear ();
 void dbprint (char *message);
 void dbprintln (char *message);
 
-void dbprintUint (uint32_t value);
-void dbprintUint_hex (uint32_t value);
 void dbprintInt (int32_t value);
 void dbprintInt_hex (int32_t value);
 
