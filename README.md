@@ -24,7 +24,7 @@ In the tab **"Source Location"**:
 2. Tick *"Link to folder in the file system"*
 3. Click `Browse...`, select the the **"dbprint-scr"** folder and press OK.
 
-### 1.2 - Add "em_usart.c" to your project
+### 1.2 - Add "em_usart.c" to your project (if not already added)
 
 In any *Simplicity Studio example project* (like **blink**) all of the header files for "emlib" are included but the c-files are sometimes not. This needs to be done manually:
 1. In the **Project Explorer** on the left, rightclick on the **"emlib"** folder under your project and select `New > File from Template`
@@ -46,7 +46,7 @@ In any *Simplicity Studio example project* (like **blink**) all of the header fi
 
 **Fixed baudrate = 115200 (8 databits, 1 stopbit, no parity)**.
 ```C
-void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool interrupts);
+void dbprint_INIT(USART_TypeDef* pointer, uint8_t location, bool vcom, bool interrupts);
 
 void dbAlert();
 void dbClear();
