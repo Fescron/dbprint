@@ -2,7 +2,7 @@
  * @file dbprint.c
  * @brief Homebrew println/printf replacement "DeBugPRINT".
  * @details Originally designed for use on the Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48).
- * @version 3.0
+ * @version 3.1
  * @author Brecht Van Eeckhoudt
  *
  * ******************************************************************************
@@ -44,6 +44,7 @@
  *   v2.5: Separated method for printing int values in a separate one for DEC and HEX notation.
  *   v2.6: Stop using itoa (<stdlib.h>) in all methods.
  *   v3.0: Simplify number printing, stop using separate methods for uint and int values.
+ *   v3.1: Remove useless if... check.
  *
  * ******************************************************************************
  *
@@ -464,49 +465,45 @@ void dbprintln (char *message)
  *****************************************************************************/
 void uint32_to_charHex (char *buf, uint32_t value, bool spacing)
 {
-	/* Checking just in case */
-	if (value <= 0xFFFFFFFF)
+	/* 4 nibble HEX representation */
+	if (value <= 0xFFFF)
 	{
-		/* 4 nibble HEX representation */
-		if (value <= 0xFFFF)
-		{
-			/* Only get necessary nibble by ANDing with a mask and
-			 * shifting one nibble (4 bits) per position */
-			buf[0] = TO_HEX(((value & 0xF000) >> 12));
-			buf[1] = TO_HEX(((value & 0x0F00) >> 8 ));
-			buf[2] = TO_HEX(((value & 0x00F0) >> 4 ));
-			buf[3] = TO_HEX( (value & 0x000F)       );
-			buf[4] = '\0'; /* NULL termination character */
-		}
+		/* Only get necessary nibble by ANDing with a mask and
+		 * shifting one nibble (4 bits) per position */
+		buf[0] = TO_HEX(((value & 0xF000) >> 12));
+		buf[1] = TO_HEX(((value & 0x0F00) >> 8 ));
+		buf[2] = TO_HEX(((value & 0x00F0) >> 4 ));
+		buf[3] = TO_HEX( (value & 0x000F)       );
+		buf[4] = '\0'; /* NULL termination character */
+	}
 
-		/* 8 nibble HEX representation */
+	/* 8 nibble HEX representation */
+	else
+	{
+		/* Only get necessary nibble by ANDing with a mask and
+		 * shifting one nibble (4 bits) per position */
+		buf[0] = TO_HEX(((value & 0xF0000000) >> 28));
+		buf[1] = TO_HEX(((value & 0x0F000000) >> 24));
+		buf[2] = TO_HEX(((value & 0x00F00000) >> 20));
+		buf[3] = TO_HEX(((value & 0x000F0000) >> 16));
+
+		/* Add spacing if necessary */
+		if (spacing)
+		{
+			buf[4] = ' '; /* Spacing */
+			buf[5] = TO_HEX(((value & 0x0000F000) >> 12));
+			buf[6] = TO_HEX(((value & 0x00000F00) >> 8 ));
+			buf[7] = TO_HEX(((value & 0x000000F0) >> 4 ));
+			buf[8] = TO_HEX( (value & 0x0000000F)       );
+			buf[9] = '\0'; /* NULL termination character */
+		}
 		else
 		{
-			/* Only get necessary nibble by ANDing with a mask and
-			 * shifting one nibble (4 bits) per position */
-			buf[0] = TO_HEX(((value & 0xF0000000) >> 28));
-			buf[1] = TO_HEX(((value & 0x0F000000) >> 24));
-			buf[2] = TO_HEX(((value & 0x00F00000) >> 20));
-			buf[3] = TO_HEX(((value & 0x000F0000) >> 16));
-
-			/* Add spacing if necessary */
-			if (spacing)
-			{
-				buf[4] = ' '; /* Spacing */
-				buf[5] = TO_HEX(((value & 0x0000F000) >> 12));
-				buf[6] = TO_HEX(((value & 0x00000F00) >> 8 ));
-				buf[7] = TO_HEX(((value & 0x000000F0) >> 4 ));
-				buf[8] = TO_HEX( (value & 0x0000000F)       );
-				buf[9] = '\0'; /* NULL termination character */
-			}
-			else
-			{
-				buf[4] = TO_HEX(((value & 0x0000F000) >> 12));
-				buf[5] = TO_HEX(((value & 0x00000F00) >> 8 ));
-				buf[6] = TO_HEX(((value & 0x000000F0) >> 4 ));
-				buf[7] = TO_HEX( (value & 0x0000000F)       );
-				buf[8] = '\0'; /* NULL termination character */
-			}
+			buf[4] = TO_HEX(((value & 0x0000F000) >> 12));
+			buf[5] = TO_HEX(((value & 0x00000F00) >> 8 ));
+			buf[6] = TO_HEX(((value & 0x000000F0) >> 4 ));
+			buf[7] = TO_HEX( (value & 0x0000000F)       );
+			buf[8] = '\0'; /* NULL termination character */
 		}
 	}
 }
@@ -525,48 +522,44 @@ void uint32_to_charHex (char *buf, uint32_t value, bool spacing)
  *****************************************************************************/
 void uint32_to_charDec (char *buf, uint32_t value)
 {
-	/* Checking just in case */
-	if (value <= 0xFFFFFFFF)
+	if (value == 0)
 	{
-		if (value == 0)
+		buf[0] = '0';
+		buf[1] = '\0'; /* NULL termination character */
+	}
+	else
+	{
+		/* MAX uint32_t value = FFFFFFFFh = 4294967295d (10 decimal chars) */
+		char backwardsBuf[10];
+
+		uint32_t calcval = value;
+		uint8_t length = 0;
+		uint8_t lengthCounter = 0;
+
+
+		/* Loop until the value is zero (separate characters 0-9) and calculate length */
+		while (calcval)
 		{
-			buf[0] = '0';
-			buf[1] = '\0'; /* NULL termination character */
+			uint32_t rem = calcval % 10;
+			backwardsBuf[length] = TO_DEC(rem); /* Convert to ASCII character */
+			length++;
+
+			calcval = calcval - rem;
+			calcval = calcval / 10;
 		}
-		else
+
+		/* Backwards counter */
+		lengthCounter = length;
+
+		/* Reverse the characters in the buffer for the final string */
+		for (uint8_t i = 0; i < length; i++)
 		{
-			/* MAX uint32_t value = FFFFFFFFh = 4294967295d (10 decimal chars) */
-			char backwardsBuf[10];
-
-			uint32_t calcval = value;
-			uint8_t length = 0;
-			uint8_t lengthCounter = 0;
-
-
-			/* Loop until the value is zero (separate characters 0-9) and calculate length */
-			while (calcval)
-			{
-				uint32_t rem = calcval % 10;
-				backwardsBuf[length] = TO_DEC(rem); /* Convert to ASCII character */
-				length++;
-
-				calcval = calcval - rem;
-				calcval = calcval / 10;
-			}
-
-			/* Backwards counter */
-			lengthCounter = length;
-
-			/* Reverse the characters in the buffer for the final string */
-			for (uint8_t i = 0; i < length; i++)
-			{
-				buf[i] = backwardsBuf[lengthCounter-1];
-				lengthCounter--;
-			}
-
-			/* Add NULL termination character */
-			buf[length] = '\0';
+			buf[i] = backwardsBuf[lengthCounter-1];
+			lengthCounter--;
 		}
+
+		/* Add NULL termination character */
+		buf[length] = '\0';
 	}
 }
 

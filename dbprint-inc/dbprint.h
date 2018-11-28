@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @file dbprint.h
  * @brief Homebrew println/printf replacement "DeBugPRINT".
- * @version 3.0
+ * @version 3.1
  * @author Brecht Van Eeckhoudt
  ******************************************************************************/
 
