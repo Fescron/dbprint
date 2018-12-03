@@ -2,7 +2,7 @@
 
 **DeBugPrint** is a homebrew minimal low-level `println/printf` replacement. It can be used to to print text/values to `uart`without a lot of external libraries. The end goal was to use no exernal libraries (with methods like ```itoa```) apart from the ones specific to the microcontroller.
 
-**DeBugPrint** is originally designed for use on the `Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48)`.
+**DeBugPrint** is originally designed for use on the `Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48)` and was developed on `Simplicity Studio v4` on `Ubuntu 18.04 LTS`.
 
 **NOTE:** There are a lot of useful simple code-examples at https://github.com/SiliconLabs/peripheral_examples
 
@@ -17,26 +17,34 @@ Open the project settings using `File > Properties > C/C++ General > Paths and S
 In the tab **"Includes"**:
 1. Click `Add... > File system...`
 2. Browse to the **"dbprint-inc"** folder and press OK. 
-3. Tick *"Add to all languages"* and press OK.
+3. Check *"Add to all languages"* and press OK.
 
 In the tab **"Source Location"**:
 1. Click `Link Folder...`
-2. Tick *"Link to folder in the file system"*
+2. Check *"Link to folder in the file system"*
 3. Click `Browse...`, select the the **"dbprint-scr"** folder and press OK.
 
 ### 1.2 - Add "em_usart.c" to your project (if not already added)
 
 In any *Simplicity Studio example project* (like **blink**) all of the header files for "emlib" are included but the c-files are sometimes not. This needs to be done manually:
 1. In the **Project Explorer** on the left, rightclick on the **"emlib"** folder under your project and select `New > File from Template`
-2. Click on `Advanced>>`and tick *"Link to file in the file system"*.
+2. Click on `Advanced>>`and check *"Link to file in the file system"*.
 3. Click `Browse...`, go to `SimplicityStudio_v4/developer/sdks/gecko_sdk_suite/v2.4/platform/emlib/src`, select the the **"em_usart.c"** file and press OK.
-4. Press FINISH
+4. Press FINISH.
 
 ### 1.3 - Include "dbprint.h" in your project's "main.c" file
 
 ```C
 #include "dbprint.h"
 ```
+
+### 1.4 - Clean & Build
+
+Perfom a *clean and build* action to fix errors that would occur when the project would just get "build" after the dbprint files are added.
+1. Click `Project > Clean...`
+2. Select *"Clean projects selected below"* and check the current project.
+3. Check *"Start a build immediately"* while *"Build only the selected projects"* is selected.
+4. Press OK.
 
 ------
 
@@ -65,7 +73,7 @@ uint32_t charHex_to_uint32(char *buf);
 
 ### 2.2 - Usage examples
 
-**NOTE:** VCOM is an on-board UART to USB converter alongside the *Segger J-Link debugger*, connected with microcontroller pins `PA0` (RX) `PF2` (TX). This converter can then be used with [Putty](https://www.putty.org/) or another serial port program. 
+**NOTE:** VCOM is an on-board UART to USB converter alongside the *Segger J-Link debugger*, connected with microcontroller pins `PA0` (RX) and `PF2` (TX). This converter can then be used with [Putty](https://www.putty.org/) or another serial port program. 
 
 **WARNING:** If the *Energy profiler* inside Simplicity Studio is used, printing to VCOM doesn't really work, use an external UART to USB converter while profiling the energy usage!
 
