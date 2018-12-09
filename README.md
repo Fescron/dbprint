@@ -62,6 +62,13 @@ void dbClear();
 void dbprint(char *message);
 void dbprintln(char *message);
 
+void dbprint_color(char *message, uint8_t color);
+void dbprintln_color(char *message, uint8_t color);
+
+void dbinfo(char *message);
+void dbwarn(char *message);
+void dbcrit(char *message);
+
 void dbprintInt(int32_t value);
 void dbprintInt_hex(int32_t value);
 
@@ -87,6 +94,15 @@ dbClear(); /* Clear the console window */
 ```C
 dbprint("Hello World");    /* Print text to uart */
 dbprintln("Hello World");  /* Print text to uart and go to the next line */
+```
+```C
+dbprint_color("Hello World", 1);   /* Print red text to uart */
+dbprintln_color("Hello World", 1); /* Print red text to uart and go to the next line */
+```
+```C
+dbinfo("Info.");           /* Print an info message with prefix "INFO: " */
+dbwarn("Warning.");        /* Print a warning message in yellow with prefix "WARN: " */
+dbcrit("Critical error."); /* Print a critical error message in red with prefix "CRIT: " */
 ```
 ```C
 uint32_t uintValue = 42;
