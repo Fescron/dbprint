@@ -316,6 +316,10 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 
 		/* Print welcome string */
 		dbprintln("\a\r\f### UART initialized (interrupt mode) ###");
+		dbinfo("This is an info message.");
+		dbwarn("This is a warning message.");
+		dbcrit("This is a critical error message.");
+		dbprintln("###  Start executing programmed code  ###\n");
 
 		/* Set TX Complete Interrupt Flag (transmission has completed and no more data
 		* is available in the transmit buffer) */
@@ -325,12 +329,11 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 	else
 	{
 		dbprintln("\a\r\f### UART initialized (no interrupts) ###");
+		dbinfo("This is an info message.");
+		dbwarn("This is a warning message.");
+		dbcrit("This is a critical error message.");
+		dbprintln("### Start executing programmed code  ###\n");
 	}
-
-	dbinfo("This is an info message.");
-	dbwarn("This is a warning message.");
-	dbcrit("This is a critical error message.");
-	dbprintln("###   Start executing program code   ###\n");
 }
 
 
