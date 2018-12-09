@@ -2,7 +2,7 @@
  * @file dbprint.c
  * @brief Homebrew println/printf replacement "DeBugPRINT".
  * @details Originally designed for use on the Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48).
- * @version 3.1
+ * @version 3.3
  * @author Brecht Van Eeckhoudt
  *
  * ******************************************************************************
@@ -45,6 +45,8 @@
  *   v2.6: Stop using itoa (<stdlib.h>) in all methods.
  *   v3.0: Simplify number printing, stop using separate methods for uint and int values.
  *   v3.1: Remove useless if... check.
+ *   v3.2: Add the ability to print text in a color.
+ *   v3.3: Add info, warning and critical error printing methods.
  *
  * ******************************************************************************
  *
@@ -71,11 +73,11 @@
  * @section Writing debug statements
  *
  *   Debug statements in the code and their severity can be the following:
- *     - dbprintln("INFO: ...");   Some info when the code executes normally.
- *     - dbprintln("WARN: ...");   The next time some code is executed a critical error may arise.
- *     - dbprintln("CRIT: ...");   Critical error, code execution can be put on hold.
- *     - dbprintln("> ...");       Program is in a "main state/method".
- *     - dbprintln(">> ...");      Program is in a "sub-state/method".
+ *     - dbprintln_info("...");  Some info when the code executes normally.
+ *     - dbprintln_warn("...");  The next time some code is executed a critical error may arise.
+ *     - dbprintln_crit("...");  Critical error, code execution can be put on hold.
+ *     - dbprintln("> ...");     Program is in a "main state/method".
+ *     - dbprintln(">> ...");    Program is in a "sub-state/method".
  *
  * ******************************************************************************
  *
@@ -324,6 +326,11 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 	{
 		dbprintln("\a\r\f### UART initialized (no interrupts) ###");
 	}
+
+	dbinfo("This is an info message.");
+	dbwarn("This is a warning message.");
+	dbcrit("This is a critical error message.");
+	dbprintln("###   Start executing program code   ###\n");
 }
 
 
@@ -378,6 +385,178 @@ void dbprint (char *message)
 
 /**************************************************************************//**
  * @brief
+ *   Print a string (char array) to USARTx and go to the next line.
+ *
+ * @param[in] message
+ *   The string to print to USARTx.
+ *****************************************************************************/
+void dbprintln (char *message)
+{
+	dbprint(message);
+
+	/* Carriage return */
+	USART_Tx(dbpointer, '\r');
+
+	/* Line feed (new line) */
+	USART_Tx(dbpointer, '\n');
+}
+
+
+/**************************************************************************//**
+ * @brief
+ *   Print a string (char array) to USARTx in a given color.
+ *
+ * @note
+ *   If the input is not a string (ex.: "Hello world!") but a char array,
+ *   the input message (array) needs to end with NULL ('\0')!
+ *
+ * @param[in] message
+ *   The string to print to USARTx.
+ *
+ * @param[in] color
+ *   The color to print the text in.
+ *   @li 0 - Reset color
+ *   @li 1 - Red
+ *   @li 2 - Green
+ *   @li 3 - Blue
+ *   @li 4 - Cyan
+ *   @li 5 - Magenta
+ *   @li 6 - Yellow
+ *****************************************************************************/
+void dbprint_color (char *message, uint8_t color)
+{
+	switch (color)
+	{
+		case 0:
+			dbprint(COLOR_RESET);
+			dbprint(message);
+			break;
+		case 1:
+			dbprint(COLOR_RED);
+			dbprint(message);
+			dbprint(COLOR_RESET);
+			break;
+		case 2:
+			dbprint(COLOR_GREEN);
+			dbprint(message);
+			dbprint(COLOR_RESET);
+			break;
+		case 3:
+			dbprint(COLOR_BLUE);
+			dbprint(message);
+			dbprint(COLOR_RESET);
+			break;
+		case 4:
+			dbprint(COLOR_CYAN);
+			dbprint(message);
+			dbprint(COLOR_RESET);
+			break;
+		case 5:
+			dbprint(COLOR_MAGENTA);
+			dbprint(message);
+			dbprint(COLOR_RESET);
+			break;
+		case 6:
+			dbprint(COLOR_YELLOW);
+			dbprint(message);
+			dbprint(COLOR_RESET);
+			break;
+		default:
+			dbprint(COLOR_RESET);
+			dbprint(message);
+	}
+}
+
+
+/**************************************************************************//**
+ * @brief
+ *   Print a string (char array) to USARTx in a given color and go to the next line.
+ *
+ * @note
+ *   If the input is not a string (ex.: "Hello world!") but a char array,
+ *   the input message (array) needs to end with NULL ('\0')!
+ *
+ * @param[in] message
+ *   The string to print to USARTx.
+ *
+ * @param[in] color
+ *   The color to print the text in.
+ *   @li 0 - Reset color
+ *   @li 1 - Red
+ *   @li 2 - Green
+ *   @li 3 - Blue
+ *   @li 4 - Cyan
+ *   @li 5 - Magenta
+ *   @li 6 - Yellow
+ *****************************************************************************/
+void dbprintln_color (char *message, uint8_t color)
+{
+	dbprint_color(message, color);
+
+	/* Carriage return */
+	USART_Tx(dbpointer, '\r');
+
+	/* Line feed (new line) */
+	USART_Tx(dbpointer, '\n');
+}
+
+
+/**************************************************************************//**
+ * @brief
+ *   Print an info string (char array) to USARTx and go to the next line.
+ *
+ * @note
+ *   If the input is not a string (ex.: "Hello world!") but a char array,
+ *   the input message (array) needs to end with NULL ('\0')!
+ *
+ * @param[in] message
+ *   The string to print to USARTx.
+ *****************************************************************************/
+void dbinfo (char *message)
+{
+	dbprint("INFO: ");
+	dbprintln(message);
+}
+
+
+/**************************************************************************//**
+ * @brief
+ *   Print a warning string (char array) in yellow to USARTx and go to the next line.
+ *
+ * @note
+ *   If the input is not a string (ex.: "Hello world!") but a char array,
+ *   the input message (array) needs to end with NULL ('\0')!
+ *
+ * @param[in] message
+ *   The string to print to USARTx.
+ *****************************************************************************/
+void dbwarn (char *message)
+{
+	dbprint_color("WARN: ", 6);
+	dbprintln_color(message, 6);
+}
+
+
+/**************************************************************************//**
+ * @brief
+ *   Print a critical error string (char array) in red to USARTx and go to the next line.
+ *
+ * @note
+ *   If the input is not a string (ex.: "Hello world!") but a char array,
+ *   the input message (array) needs to end with NULL ('\0')!
+ *
+ * @param[in] message
+ *   The string to print to USARTx.
+ *****************************************************************************/
+void dbcrit (char *message)
+{
+	dbprint_color("CRIT: ", 1);
+	dbprintln_color(message, 1);
+}
+
+
+/**************************************************************************//**
+ * @brief
  *   Print a number in decimal notation to USARTx.
  *
  * @param[in] value
@@ -426,25 +605,6 @@ void dbprintInt_hex (int32_t value)
 	uint32_to_charHex(hexchar, value, true); /* true: add spacing between eight HEX chars */
 	dbprint("0x");
 	dbprint(hexchar);
-}
-
-
-/**************************************************************************//**
- * @brief
- *   Print a string (char array) to USARTx and go to the next line.
- *
- * @param[in] message
- *   The string to print to USARTx.
- *****************************************************************************/
-void dbprintln (char *message)
-{
-	dbprint(message);
-
-	/* Carriage return */
-	USART_Tx(dbpointer, '\r');
-
-	/* Line feed (new line) */
-	USART_Tx(dbpointer, '\n');
 }
 
 

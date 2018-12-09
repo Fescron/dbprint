@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @file dbprint.h
  * @brief Homebrew println/printf replacement "DeBugPRINT".
- * @version 3.1
+ * @version 3.3
  * @author Brecht Van Eeckhoudt
  ******************************************************************************/
 
@@ -22,6 +22,16 @@
 #define DBPRINT_BUFFER_SIZE 80
 
 
+/* ANSI colors */
+#define COLOR_RED     "\x1b[31m"
+#define COLOR_GREEN   "\x1b[32m"
+#define COLOR_BLUE    "\x1b[34m"
+#define COLOR_CYAN    "\x1b[36m"
+#define COLOR_MAGENTA "\x1b[35m"
+#define COLOR_YELLOW  "\x1b[33m"
+#define COLOR_RESET   "\x1b[0m"
+
+
 /* Global variables */
 extern USART_TypeDef* dbpointer;
 
@@ -38,6 +48,13 @@ void dbClear ();
 
 void dbprint (char *message);
 void dbprintln (char *message);
+
+void dbprint_color (char *message, uint8_t color);
+void dbprintln_color (char *message, uint8_t color);
+
+void dbinfo (char *message);
+void dbwarn (char *message);
+void dbcrit (char *message);
 
 void dbprintInt (int32_t value);
 void dbprintInt_hex (int32_t value);
