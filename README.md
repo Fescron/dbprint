@@ -93,10 +93,12 @@ dbClear(); /* Clear the console window */
 ```
 ```C
 dbprint("Hello World");    /* Print text to uart */
+dbprintln("");             /* Go to next line */
 dbprintln("Hello World");  /* Print text to uart and go to the next line */
 ```
 ```C
 dbprint_color("Hello World", 1);   /* Print red text to uart */
+dbprintln("");                     /* Go to next line */
 dbprintln_color("Hello World", 1); /* Print red text to uart and go to the next line */
 ```
 ```C
@@ -107,12 +109,16 @@ dbcrit("Critical error."); /* Print a critical error message in red with prefix 
 ```C
 uint32_t uintValue = 42;
 dbprintInt(uintValue);     /* Print "unsigned int" value in decimal notation */
+dbprintln("");             /* Go to next line */
 dbprintInt_hex(uintValue); /* Print "unsigned int" value in hexadecimal notation */
+dbprintln("");             /* Go to next line */
 ```
 ```C
 int32_t intValue = -42;
 dbprintInt(intValue);      /* Print "signed int" value in decimal notation */
+dbprintln("");             /* Go to next line */
 dbprintInt_hex(intValue);  /* Print "signed int" value in hexadecimal notation */
+dbprintln("");             /* Go to next line */
 ```
 
 ------
