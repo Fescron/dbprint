@@ -110,7 +110,7 @@ dbprintInt(uintValue);     /* Print "unsigned int" value in decimal notation */
 dbprintInt_hex(uintValue); /* Print "unsigned int" value in hexadecimal notation */
 ```
 ```C
-int32_t intvalue = -42;
+int32_t intValue = -42;
 dbprintInt(intValue);      /* Print "signed int" value in decimal notation */
 dbprintInt_hex(intValue);  /* Print "signed int" value in hexadecimal notation */
 ```
