@@ -62,6 +62,12 @@ void dbClear();
 void dbprint(char *message);
 void dbprintln(char *message);
 
+void dbprintInt(int32_t value);
+void dbprintlnInt(int32_t value);
+
+void dbprintInt_hex(int32_t value);
+void dbprintlnInt_hex(int32_t value);
+
 void dbprint_color(char *message, uint8_t color);
 void dbprintln_color(char *message, uint8_t color);
 
@@ -69,14 +75,13 @@ void dbinfo(char *message);
 void dbwarn(char *message);
 void dbcrit(char *message);
 
-void dbprintInt(int32_t value);
-void dbprintlnInt(int32_t value);
-
-void dbprintInt_hex(int32_t value);
-void dbprintlnInt_hex(int32_t value);
+void dbinfoInt(char *message1, int32_t value, char *message2, bool hex);
+void dbwarnInt(char *message1, int32_t value, char *message2, bool hex);
+void dbcritInt(char *message1, int32_t value, char *message2, bool hex);
 
 void uint32_to_charHex(char *buf, uint32_t value, bool spacing);
 void uint32_to_charDec(char *buf, uint32_t value);
+
 uint32_t charDec_to_uint32(char *buf);
 uint32_t charHex_to_uint32(char *buf);
 ```
@@ -87,27 +92,15 @@ uint32_t charHex_to_uint32(char *buf);
 
 **WARNING:** If the *Energy profiler* inside Simplicity Studio is used, printing to VCOM doesn't really work, use an external UART to USB converter while profiling the energy usage!
 
+### 2.2.1 - Basic functions
+
 ```C
 dbprint_INIT(USART1, 4, true, false); /* Initialize UART1 on VCOM, no interrupts*/
-```
-```C
-dbAlert(); /* Let the console make an "alert" (bell) sound */
-dbClear(); /* Clear the console window */
 ```
 ```C
 dbprint("Hello World");    /* Print text to uart */
 dbprintln("");             /* Go to next line */
 dbprintln("Hello World");  /* Print text to uart and go to the next line */
-```
-```C
-dbprint_color("Hello World", 1);   /* Print red text to uart */
-dbprintln("");                     /* Go to next line */
-dbprintln_color("Hello World", 1); /* Print red text to uart and go to the next line */
-```
-```C
-dbinfo("Info.");           /* Print an info message with prefix "INFO: " */
-dbwarn("Warning.");        /* Print a warning message in yellow with prefix "WARN: " */
-dbcrit("Critical error."); /* Print a critical error message in red with prefix "CRIT: " */
 ```
 ```C
 uint32_t value = 42;
@@ -123,6 +116,49 @@ dbprintlnInt_hex(value); /* Go to next line */
 /* The methods above also work for printing "signed int" values like: */
 int32_t intValue = -42;
 ```
+### 2.2.2 - More advanced functions 
+```C
+dbAlert(); /* Let the console make an "alert" (bell) sound */
+dbClear(); /* Clear the console window */
+```
+```C
+dbprint_color("Hello World", 1);   /* Print red text to uart */
+dbprintln("");                     /* Go to next line */
+dbprintln_color("Hello World", 1); /* Print red text to uart and go to the next line */
+```
+```C
+dbinfo("Info.");           /* Print an info message with prefix "INFO: " */
+dbwarn("Warning.");        /* Print a warning message in yellow with prefix "WARN: " */
+dbcrit("Critical error."); /* Print a critical error message in red with prefix "CRIT: " */
+```
+```C
+uint32_t value = 42;
+
+/* Print an info message with prefix "INFO: " where a value
+   in decimal notation is enclosed between two strings */
+dbinfoInt("Info = ", value, " [unit of value]", false);
+
+/* Print an info message with prefix "INFO: " where a value
+   in hexadecimal notation is enclosed between two strings */
+dbinfoInt("Info = ", value, " [unit of value]", true);
+
+/* Print a warning message in yellow with prefix "WARN: " where a value
+   in decimal notation is enclosed between two strings */
+dbwarnInt("Warning = ", value, " [unit of value]", false);
+
+/* Print a warning message in yellow with prefix "WARN: " where a value
+   in hexadecimal notation is enclosed between two strings */
+dbwarnInt("Warning = ", value, " [unit of value]", true);
+
+/* Print a critical error message in red with prefix "CRIT: " where a value
+  in decimal notation is enclosed between two strings */
+dbcritInt("Critical error = ", value, " [unit of value]", false);
+
+/* Print a critical error message in red with prefix "CRIT: " where a value
+  in hexadecimal notation is enclosed between two strings */
+dbcritInt("Critical error = ", value, " [unit of value]", true);
+```
+
 
 ------
 
