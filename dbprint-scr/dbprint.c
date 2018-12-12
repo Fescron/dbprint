@@ -49,6 +49,9 @@
  *   v3.3: Add info, warning and critical error printing methods.
  *   v3.4: Add printInt(_hex) methods that directly go to a new line.
  *   v3.5: Add USART0 IRQ handlers.
+ *   v3.6: Add the ability to print (u)int values as INFO, WARN or CRIT lines.
+ *
+ *   TODO: Use getters and setters for the interrupt buffers? (v4.0)
  *
  * ******************************************************************************
  *
@@ -69,17 +72,6 @@
  * @section Debug using VCOM (no interrupt functionality)
  *
  *   dbprint_INIT(USART1, 4, true, false);
- *
- * ******************************************************************************
- *
- * @section Writing debug statements
- *
- *   Debug statements in the code and their severity can be the following:
- *     - dbprintln_info("...");  Some info when the code executes normally.
- *     - dbprintln_warn("...");  The next time some code is executed a critical error may arise.
- *     - dbprintln_crit("...");  Critical error, code execution can be put on hold.
- *     - dbprintln("> ...");     Program is in a "main state/method".
- *     - dbprintln(">> ...");    Program is in a "sub-state/method".
  *
  * ******************************************************************************
  *
@@ -557,6 +549,110 @@ void dbcrit (char *message)
 {
 	dbprint_color("CRIT: ", 1);
 	dbprintln_color(message, 1);
+}
+
+
+/**************************************************************************//**
+ * @brief
+ *   Print a value surrounded by two strings (char array) to USARTx
+ *   with "INFO: " added in front and go to the next line.
+ *
+ * @note
+ *   If the input is not a string (ex.: "Hello world!") but a char array,
+ *   the input message (array) needs to end with NULL ('\0')!
+ *
+ * @param[in] message1
+ *   The first part of the string to print to USARTx.
+ *
+ * @param[in] value
+ *   The value to print between the two string parts.
+ *
+ * @param[in] message2
+ *   The second part of the string to print to USARTx.
+ *
+ * @param[in] hex
+ *   @li false - Print the value in decimal notation.
+ *   @li true - Print the value in hexadecimal notation.
+ *****************************************************************************/
+void dbinfoInt (char *message1, int32_t value, char *message2, bool hex)
+{
+	dbprint("INFO: ");
+	dbprint(message1);
+
+	if(hex) dbprintInt_hex(value);
+	else dbprintInt(value);
+
+	dbprintln(message2);
+}
+
+
+/**************************************************************************//**
+ * @brief
+ *   Print a value surrounded by two strings (char array) to USARTx
+ *   with "WARN: " added in front and go to the next line.
+ *   The value is in the color white, the rest is yellow.
+ *
+ * @note
+ *   If the input is not a string (ex.: "Hello world!") but a char array,
+ *   the input message (array) needs to end with NULL ('\0')!
+ *
+ * @param[in] message1
+ *   The first part of the string to print to USARTx.
+ *
+ * @param[in] value
+ *   The value to print between the two string parts.
+ *
+ * @param[in] message2
+ *   The second part of the string to print to USARTx.
+ *
+ * @param[in] hex
+ *   @li false - Print the value in decimal notation.
+ *   @li true - Print the value in hexadecimal notation.
+ *****************************************************************************/
+void dbwarnInt (char *message1, int32_t value, char *message2, bool hex)
+{
+	dbprint_color("WARN: ", 6);
+	dbprint_color(message1, 6);
+
+	if(hex) dbprintInt_hex(value);
+	else dbprintInt(value);
+
+	dbprintln_color(message2, 6);
+}
+
+
+/**************************************************************************//**
+ * @brief
+ *   Print a value surrounded by two strings (char array) to USARTx
+ *   with "CRIT: " added in front and go to the next line.
+ *   The value is in the color white, the rest is red.
+ *
+ * @note
+ *   If the input is not a string (ex.: "Hello world!") but a char array,
+ *   the input message (array) needs to end with NULL ('\0')!
+ *
+ * @param[in] message1
+ *   The first part of the string to print to USARTx.
+ *
+ * @param[in] value
+ *   The value to print between the two string parts.
+ *
+ * @param[in] message2
+ *   The second part of the string to print to USARTx.
+ *
+ * @param[in] hex
+ *   @li false - Print the value in decimal notation.
+ *   @li true - Print the value in hexadecimal notation.
+ *****************************************************************************/
+void dbcritInt (char *message1, int32_t value, char *message2, bool hex)
+{
+	dbprint_color("CRIT: ", 1);
+	dbprint_color(message1, 1);
+
+	if(hex) dbprintInt_hex(value);
+	else dbprintInt(value);
+
+	dbprintln_color(message2, 1);
 }
 
 

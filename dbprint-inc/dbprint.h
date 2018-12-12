@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @file dbprint.h
  * @brief Homebrew println/printf replacement "DeBugPRINT".
- * @version 3.5
+ * @version 3.6
  * @author Brecht Van Eeckhoudt
  ******************************************************************************/
 
@@ -55,6 +55,10 @@ void dbprintln_color (char *message, uint8_t color);
 void dbinfo (char *message);
 void dbwarn (char *message);
 void dbcrit (char *message);
+
+void dbinfoInt (char *message1, int32_t value, char *message2, bool hex);
+void dbwarnInt (char *message1, int32_t value, char *message2, bool hex);
+void dbcritInt (char *message1, int32_t value, char *message2, bool hex);
 
 void dbprintInt (int32_t value);
 void dbprintlnInt (int32_t value);
