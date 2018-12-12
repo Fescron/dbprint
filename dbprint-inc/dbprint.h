@@ -49,6 +49,12 @@ void dbClear ();
 void dbprint (char *message);
 void dbprintln (char *message);
 
+void dbprintInt (int32_t value);
+void dbprintlnInt (int32_t value);
+
+void dbprintInt_hex (int32_t value);
+void dbprintlnInt_hex (int32_t value);
+
 void dbprint_color (char *message, uint8_t color);
 void dbprintln_color (char *message, uint8_t color);
 
@@ -59,12 +65,6 @@ void dbcrit (char *message);
 void dbinfoInt (char *message1, int32_t value, char *message2, bool hex);
 void dbwarnInt (char *message1, int32_t value, char *message2, bool hex);
 void dbcritInt (char *message1, int32_t value, char *message2, bool hex);
-
-void dbprintInt (int32_t value);
-void dbprintlnInt (int32_t value);
-
-void dbprintInt_hex (int32_t value);
-void dbprintlnInt_hex (int32_t value);
 
 void uint32_to_charHex (char *buf, uint32_t value, bool spacing);
 void uint32_to_charDec (char *buf, uint32_t value);
