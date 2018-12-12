@@ -70,7 +70,10 @@ void dbwarn(char *message);
 void dbcrit(char *message);
 
 void dbprintInt(int32_t value);
+void dbprintlnInt(int32_t value);
+
 void dbprintInt_hex(int32_t value);
+void dbprintlnInt_hex(int32_t value);
 
 void uint32_to_charHex(char *buf, uint32_t value, bool spacing);
 void uint32_to_charDec(char *buf, uint32_t value);
@@ -107,18 +110,18 @@ dbwarn("Warning.");        /* Print a warning message in yellow with prefix "WAR
 dbcrit("Critical error."); /* Print a critical error message in red with prefix "CRIT: " */
 ```
 ```C
-uint32_t uintValue = 42;
-dbprintInt(uintValue);     /* Print "unsigned int" value in decimal notation */
-dbprintln("");             /* Go to next line */
-dbprintInt_hex(uintValue); /* Print "unsigned int" value in hexadecimal notation */
-dbprintln("");             /* Go to next line */
-```
-```C
+uint32_t value = 42;
+
+/* Print "unsigned int" value in decimal notation */
+dbprintInt(value);       /* Stay on the current line */
+dbprintlnInt(value);     /* Go to next line */
+
+/* Print "unsigned int" value in hexadecimal notation */
+dbprintInt_hex(value);   /* Stay on the current line */
+dbprintlnInt_hex(value); /* Go to next line */
+
+/* The methods above also work for printing "signed int" values like: */
 int32_t intValue = -42;
-dbprintInt(intValue);      /* Print "signed int" value in decimal notation */
-dbprintln("");             /* Go to next line */
-dbprintInt_hex(intValue);  /* Print "signed int" value in hexadecimal notation */
-dbprintln("");             /* Go to next line */
 ```
 
 ------
