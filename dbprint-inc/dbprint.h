@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @file dbprint.h
  * @brief Homebrew println/printf replacement "DeBugPRINT".
- * @version 3.3
+ * @version 3.4
  * @author Brecht Van Eeckhoudt
  ******************************************************************************/
 
@@ -57,7 +57,10 @@ void dbwarn (char *message);
 void dbcrit (char *message);
 
 void dbprintInt (int32_t value);
+void dbprintlnInt (int32_t value);
+
 void dbprintInt_hex (int32_t value);
+void dbprintlnInt_hex (int32_t value);
 
 void uint32_to_charHex (char *buf, uint32_t value, bool spacing);
 void uint32_to_charDec (char *buf, uint32_t value);

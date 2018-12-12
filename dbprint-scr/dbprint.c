@@ -2,7 +2,7 @@
  * @file dbprint.c
  * @brief Homebrew println/printf replacement "DeBugPRINT".
  * @details Originally designed for use on the Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48).
- * @version 3.3
+ * @version 3.4
  * @author Brecht Van Eeckhoudt
  *
  * ******************************************************************************
@@ -47,6 +47,7 @@
  *   v3.1: Remove useless if... check.
  *   v3.2: Add the ability to print text in a color.
  *   v3.3: Add info, warning and critical error printing methods.
+ *   v3.4: Add printInt(_hex) methods that directly go to a new line.
  *
  * ******************************************************************************
  *
@@ -596,6 +597,26 @@ void dbprintInt (int32_t value)
 
 /**************************************************************************//**
  * @brief
+ *   Print a number in decimal notation to USARTx and go to the next line.
+ *
+ * @param[in] value
+ *   The number to print to USARTx.
+ *   This can be of type "uint32_t" or "int32_t".
+ *****************************************************************************/
+void dbprintlnInt (int32_t value)
+{
+	dbprintInt(value);
+
+	/* Carriage return */
+	USART_Tx(dbpointer, '\r');
+
+	/* Line feed (new line) */
+	USART_Tx(dbpointer, '\n');
+}
+
+
+/**************************************************************************//**
+ * @brief
  *   Print a number in hexadecimal notation to USARTx.
  *
  * @param[in] value
@@ -608,6 +629,26 @@ void dbprintInt_hex (int32_t value)
 	uint32_to_charHex(hexchar, value, true); /* true: add spacing between eight HEX chars */
 	dbprint("0x");
 	dbprint(hexchar);
+}
+
+
+/**************************************************************************//**
+ * @brief
+ *   Print a number in hexadecimal notation to USARTx and go to the next line.
+ *
+ * @param[in] value
+ *   The number to print to USARTx.
+ *   This can be of type "uint32_t" or "int32_t".
+ *****************************************************************************/
+void dbprintlnInt_hex (int32_t value)
+{
+	dbprintInt_hex(value);
+
+	/* Carriage return */
+	USART_Tx(dbpointer, '\r');
+
+	/* Line feed (new line) */
+	USART_Tx(dbpointer, '\n');
 }
 
 
