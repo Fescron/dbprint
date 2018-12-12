@@ -71,7 +71,6 @@ void dbcrit(char *message);
 
 void dbprintInt(int32_t value);
 void dbprintlnInt(int32_t value);
-
 void dbprintInt_hex(int32_t value);
 void dbprintlnInt_hex(int32_t value);
 
