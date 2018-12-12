@@ -2,7 +2,7 @@
  * @file dbprint.c
  * @brief Homebrew println/printf replacement "DeBugPRINT".
  * @details Originally designed for use on the Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48).
- * @version 3.4
+ * @version 3.5
  * @author Brecht Van Eeckhoudt
  *
  * ******************************************************************************
@@ -48,6 +48,7 @@
  *   v3.2: Add the ability to print text in a color.
  *   v3.3: Add info, warning and critical error printing methods.
  *   v3.4: Add printInt(_hex) methods that directly go to a new line.
+ *   v3.5: Add USART0 IRQ handlers.
  *
  * ******************************************************************************
  *
@@ -858,6 +859,77 @@ uint32_t charHex_to_uint32 (char *buf)
 	}
 
 	return (value);
+}
+
+
+/**************************************************************************//**
+ * @brief
+ *   USARTx RX interrupt service routine.
+ *
+ * @note
+ *   The "weak" definition for this method is located in "system_efm32hg.h".
+ *****************************************************************************/
+void USART0_RX_IRQHandler(void)
+{
+	/* "static" so it keeps its value between invocations */
+	static uint32_t i = 0;
+
+	/* Get and clear the pending USART interrupt flags */
+	uint32_t flags = USART_IntGet(dbpointer);
+	USART_IntClear(dbpointer, flags);
+
+	/* Store incoming data into dbprint_rx_buffer */
+	dbprint_rx_buffer[i++] = USART_Rx(dbpointer);
+
+	/* Set dbprint_rxdata when a special character is received (~ full line received) */
+	if ( (dbprint_rx_buffer[i - 1] == '\r') || (dbprint_rx_buffer[i - 1] == '\f') )
+	{
+		dbprint_rxdata = true;
+		dbprint_rx_buffer[i - 1] = '\0'; /* Overwrite CR or LF character */
+		i = 0;
+	}
+
+	/* Set dbprint_rxdata when the buffer is full */
+	if (i >= (DBPRINT_BUFFER_SIZE - 2))
+	{
+		dbprint_rxdata = true;
+		dbprint_rx_buffer[i] = '\0'; /* Do not overwrite last character */
+		i = 0;
+	}
+}
+
+
+/**************************************************************************//**
+ * @brief
+ *   USARTx TX interrupt service routine.
+ *
+ * @note
+ *   The "weak" definition for this method is located in "system_efm32hg.h".
+ *****************************************************************************/
+void USART0_TX_IRQHandler(void)
+{
+	/* "static" so it keeps its value between invocations */
+	static uint32_t i = 0;
+
+	/* Get and clear the pending USART interrupt flags */
+	uint32_t flags = USART_IntGet(dbpointer);
+	USART_IntClear(dbpointer, flags);
+
+	/* Mask flags AND "TX Complete Interrupt Flag" */
+	if (flags & USART_IF_TXC)
+	{
+		/* Index is smaller than the maximum buffer size and
+		 * the current item to print is not "NULL" (\0) */
+		if ( (i < DBPRINT_BUFFER_SIZE) && (dbprint_tx_buffer[i] != '\0') )
+		{
+			/* Transmit byte at current index and increment index */
+			USART_Tx(dbpointer, dbprint_tx_buffer[i++]);
+		}
+		else
+		{
+			i = 0; /* No more data to send */
+		}
+	}
 }
 
 
