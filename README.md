@@ -4,6 +4,8 @@
 
 **DeBugPrint** is originally designed for use on the `Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48)` and was developed on `Simplicity Studio v4` on `Ubuntu 18.04 LTS`.
 
+<br/>
+
 **NOTE:** There are a lot of useful simple code-examples at https://github.com/SiliconLabs/peripheral_examples
 
 ------
@@ -15,22 +17,29 @@
 Open the project settings using `File > Properties > C/C++ General > Paths and Symbols`.
 
 In the tab **"Includes"**:
+
 1. Click `Add... > File system...`
 2. Browse to the **"dbprint-inc"** folder and press OK. 
 3. Check *"Add to all languages"* and press OK.
 
 In the tab **"Source Location"**:
+
 1. Click `Link Folder...`
 2. Check *"Link to folder in the file system"*
 3. Click `Browse...`, select the the **"dbprint-scr"** folder and press OK.
 
+<br/>
+
 ### 1.2 - Add "em_usart.c" to your project (if not already added)
 
 In any *Simplicity Studio example project* (like **blink**) all of the header files for "emlib" are included but the c-files are sometimes not. This needs to be done manually:
+
 1. In the **Project Explorer** on the left, rightclick on the **"emlib"** folder under your project and select `New > File from Template`
 2. Click on `Advanced>>`and check *"Link to file in the file system"*.
 3. Click `Browse...`, go to `SimplicityStudio_v4/developer/sdks/gecko_sdk_suite/v2.4/platform/emlib/src`, select the the **"em_usart.c"** file and press OK.
 4. Press FINISH.
+
+<br/>
 
 ### 1.3 - Include "dbprint.h" in your project's "main.c" file
 
@@ -38,9 +47,12 @@ In any *Simplicity Studio example project* (like **blink**) all of the header fi
 #include "dbprint.h"
 ```
 
+<br/>
+
 ### 1.4 - Clean & Build
 
-Perfom a *clean and build* action to fix errors that would occur when the project would just get "build" after the dbprint files are added.
+Perform a *clean and build* action to fix errors that would occur when the project would just get "build" after the dbprint files are added.
+
 1. Click `Project > Clean...`
 2. Select *"Clean projects selected below"* and check the current project.
 3. Check *"Start a build immediately"* while *"Build only the selected projects"* is selected.
@@ -53,6 +65,7 @@ Perfom a *clean and build* action to fix errors that would occur when the projec
 ### 2.1 - Definitions
 
 **Fixed baudrate = 115200 (8 databits, 1 stopbit, no parity)**.
+
 ```C
 void dbprint_INIT(USART_TypeDef* pointer, uint8_t location, bool vcom, bool interrupts);
 
@@ -86,6 +99,8 @@ uint32_t charDec_to_uint32(char *buf);
 uint32_t charHex_to_uint32(char *buf);
 ```
 
+<br/>
+
 ### 2.2 - Usage examples
 
 **NOTE:** VCOM is an on-board UART to USB converter alongside the *Segger J-Link debugger*, connected with microcontroller pins `PA0` (RX) and `PF2` (TX). This converter can then be used with [Putty](https://www.putty.org/) or another serial port program. 
@@ -97,11 +112,13 @@ uint32_t charHex_to_uint32(char *buf);
 ```C
 dbprint_INIT(USART1, 4, true, false); /* Initialize UART1 on VCOM, no interrupts*/
 ```
+
 ```C
 dbprint("Hello World");    /* Print text to uart */
 dbprintln("");             /* Go to next line */
 dbprintln("Hello World");  /* Print text to uart and go to the next line */
 ```
+
 ```C
 uint32_t value = 42;
 
@@ -116,21 +133,26 @@ dbprintlnInt_hex(value); /* Go to next line */
 /* The methods above also work for printing "signed int" values like: */
 int32_t intValue = -42;
 ```
-### 2.2.2 - More advanced functions 
+
+### 2.2.2 - More advanced functions
+
 ```C
 dbAlert(); /* Let the console make an "alert" (bell) sound */
 dbClear(); /* Clear the console window */
 ```
+
 ```C
 dbprint_color("Hello World", 1);   /* Print red text to uart */
 dbprintln("");                     /* Go to next line */
 dbprintln_color("Hello World", 1); /* Print red text to uart and go to the next line */
 ```
+
 ```C
 dbinfo("Info.");           /* Print an info message with prefix "INFO: " */
 dbwarn("Warning.");        /* Print a warning message in yellow with prefix "WARN: " */
 dbcrit("Critical error."); /* Print a critical error message in red with prefix "CRIT: " */
 ```
+
 ```C
 uint32_t value = 42;
 
@@ -159,12 +181,12 @@ dbcritInt("Critical error = ", value, " [unit of value]", false);
 dbcritInt("Critical error = ", value, " [unit of value]", true);
 ```
 
-
 ------
 
 ## 3 - Alternate locations of pins
 
 In C, pin selection happens at the end of initialization methods using statements like:
+
 ```C
 USART1->ROUTE |= USART_ROUTE_TXPEN | USART_ROUTE_RXPEN | USART_ROUTE_LOCATION_LOC0;
 ```
@@ -183,12 +205,13 @@ If you use **dbprint** you don't really need to worry about this but you need to
 ## 4 - Code examples for when dbprint is in "interrupt mode"
 
 ### 4.1 - Echo text back (can be put in "while(1)" in "main.c")
+
 ```C
 /* Data is ready to retransmit (notified by the RX handler) */
 if (dbprint_rxdata)
 {
    uint32_t i;
-      
+
    /* RX Data Valid Interrupt Enable
     *   Set when data is available in the receive buffer. Cleared when the receive buffer is empty.
     *
@@ -211,7 +234,7 @@ if (dbprint_rxdata)
    dbprint_tx_buffer[i++] = '\r';
    dbprint_tx_buffer[i++] = '\n';
    dbprint_tx_buffer[i] = '\0';
-      
+
    /* Reset "notification" variable */
    dbprint_rxdata = false;
 
@@ -224,5 +247,3 @@ if (dbprint_rxdata)
    USART_IntSet(dbpointer, USART_IFS_TXC);
 }
 ```
-
-
