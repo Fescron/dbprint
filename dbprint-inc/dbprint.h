@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @file dbprint.h
  * @brief Homebrew println/printf replacement "DeBugPRINT".
- * @version 3.6
+ * @version 3.7
  * @author Brecht Van Eeckhoudt
  ******************************************************************************/
 
@@ -62,9 +62,13 @@ void dbinfo (char *message);
 void dbwarn (char *message);
 void dbcrit (char *message);
 
-void dbinfoInt (char *message1, int32_t value, char *message2, bool hex);
-void dbwarnInt (char *message1, int32_t value, char *message2, bool hex);
-void dbcritInt (char *message1, int32_t value, char *message2, bool hex);
+void dbinfoInt (char *message1, int32_t value, char *message2);
+void dbwarnInt (char *message1, int32_t value, char *message2);
+void dbcritInt (char *message1, int32_t value, char *message2);
+
+void dbinfoInt_hex (char *message1, int32_t value, char *message2);
+void dbwarnInt_hex (char *message1, int32_t value, char *message2);
+void dbcritInt_hex (char *message1, int32_t value, char *message2);
 
 void uint32_to_charHex (char *buf, uint32_t value, bool spacing);
 void uint32_to_charDec (char *buf, uint32_t value);
