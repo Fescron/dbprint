@@ -10,6 +10,24 @@
 
 ------
 
+## Table of contents
+
+- [1 - Installation instructions (Simplicity Studo v4)](#1---installation-instructions-simplicity-studo-v4)
+   - [1.1 - Add "dbprint.c" and "dbprint.h" to your project](#11---add-dbprintc-and-dbprinth-to-your-project)
+   - [1.2 - Add "em_usart.c" to your project (if not already added)](#12---add-em_usartc-to-your-project-if-not-already-added)
+   - [1.3 - Include "dbprint.h" in your project's "main.c" file](#13---include-dbprinth-in-your-projects-mainc-file)
+   - [1.4 - Clean & Build](#14---clean--build)
+- [2 - Methods](#2---methods)
+   - [2.1 - Definitions](#21---definitions)
+   - [2.2 - Usage examples](#22---usage-examples)
+      - [2.2.1 - Basic functions](#221---basic-functions)
+      - [2.2.2 - More advanced functions](#222---more-advanced-functions)
+- [3 - Alternate locations of pins](#3---alternate-locations-of-pins)
+- 4 - Code examples for when dbprint is in "interrupt mode"](#4---code-examples-for-when-dbprint-is-in-interrupt-mode)
+   - [4.1 - Echo text back (can be put in "while(1)" in "main.c")](#41---echo-text-back-can-be-put-in-while1-in-mainc)
+
+------
+
 ## 1 - Installation instructions (Simplicity Studo v4)
 
 ### 1.1 - Add "dbprint.c" and "dbprint.h" to your project
