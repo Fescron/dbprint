@@ -23,7 +23,7 @@
       - [2.2.1 - Basic functions](#221---basic-functions)
       - [2.2.2 - More advanced functions](#222---more-advanced-functions)
 - [3 - Alternate locations of pins](#3---alternate-locations-of-pins)
-- 4 - Code examples for when dbprint is in "interrupt mode"](#4---code-examples-for-when-dbprint-is-in-interrupt-mode)
+- [4 - Code examples for when dbprint is in "interrupt mode"](#4---code-examples-for-when-dbprint-is-in-interrupt-mode)
    - [4.1 - Echo text back (can be put in "while(1)" in "main.c")](#41---echo-text-back-can-be-put-in-while1-in-mainc)
 
 ------
