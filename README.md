@@ -88,9 +88,13 @@ void dbinfo(char *message);
 void dbwarn(char *message);
 void dbcrit(char *message);
 
-void dbinfoInt(char *message1, int32_t value, char *message2, bool hex);
-void dbwarnInt(char *message1, int32_t value, char *message2, bool hex);
-void dbcritInt(char *message1, int32_t value, char *message2, bool hex);
+void dbinfoInt(char *message1, int32_t value, char *message2);
+void dbwarnInt(char *message1, int32_t value, char *message2);
+void dbcritInt(char *message1, int32_t value, char *message2);
+
+void dbinfoInt_hex(char *message1, int32_t value, char *message2);
+void dbwarnInt_hex(char *message1, int32_t value, char *message2);
+void dbcritInt_hex(char *message1, int32_t value, char *message2);
 
 void uint32_to_charHex(char *buf, uint32_t value, bool spacing);
 void uint32_to_charDec(char *buf, uint32_t value);
@@ -158,27 +162,27 @@ uint32_t value = 42;
 
 /* Print an info message with prefix "INFO: " where a value
    in decimal notation is enclosed between two strings */
-dbinfoInt("Info = ", value, " [unit of value]", false);
+dbinfoInt("Info = ", value, " [unit of value]");
 
 /* Print an info message with prefix "INFO: " where a value
    in hexadecimal notation is enclosed between two strings */
-dbinfoInt("Info = ", value, " [unit of value]", true);
+dbinfoInt_hex("Info = ", value, " [unit of value]");
 
 /* Print a warning message in yellow with prefix "WARN: " where a value
    in decimal notation is enclosed between two strings */
-dbwarnInt("Warning = ", value, " [unit of value]", false);
+dbwarnInt("Warning = ", value, " [unit of value]");
 
 /* Print a warning message in yellow with prefix "WARN: " where a value
    in hexadecimal notation is enclosed between two strings */
-dbwarnInt("Warning = ", value, " [unit of value]", true);
+dbwarnInt_hex("Warning = ", value, " [unit of value]");
 
 /* Print a critical error message in red with prefix "CRIT: " where a value
   in decimal notation is enclosed between two strings */
-dbcritInt("Critical error = ", value, " [unit of value]", false);
+dbcritInt("Critical error = ", value, " [unit of value]");
 
 /* Print a critical error message in red with prefix "CRIT: " where a value
   in hexadecimal notation is enclosed between two strings */
-dbcritInt("Critical error = ", value, " [unit of value]", true);
+dbcritInt_hex("Critical error = ", value, " [unit of value]");
 ```
 
 ------
