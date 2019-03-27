@@ -12,7 +12,7 @@
 
 ## Table of contents
 
-- [1 - Installation instructions (Simplicity Studo v4)](#1---installation-instructions-simplicity-studo-v4)
+- [1 - Installation instructions (Simplicity Studio v4)](#1---installation-instructions-simplicity-studio-v4)
    - [1.1 - Add "dbprint.c" and "dbprint.h" to your project](#11---add-dbprintc-and-dbprinth-to-your-project)
    - [1.2 - Add "em_usart.c" to your project (if not already added)](#12---add-em_usartc-to-your-project-if-not-already-added)
    - [1.3 - Include "dbprint.h" in your project's "main.c" file](#13---include-dbprinth-in-your-projects-mainc-file)
@@ -28,7 +28,7 @@
 
 ------
 
-## 1 - Installation instructions (Simplicity Studo v4)
+## 1 - Installation instructions (Simplicity Studio v4)
 
 ### 1.1 - Add "dbprint.c" and "dbprint.h" to your project
 
