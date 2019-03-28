@@ -1,6 +1,11 @@
 # dbprint
 
+![GitHub Release Date](https://img.shields.io/github/release-date/Fescron/dbprint.svg)
 ![GitHub release](https://img.shields.io/github/release/Fescron/dbprint.svg)
+![GitHub last commit](https://img.shields.io/github/last-commit/Fescron/dbprint.svg)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/Fescron/dbprint.svg)
+![Target device](https://img.shields.io/badge/target%20device-EFM32HG322F64G-yellow.svg)
+
 
 **DeBugPrint** is a homebrew minimal low-level `println/printf` replacement. It can be used to to print text/values to `uart`without a lot of external libraries. The end goal was to use no exernal libraries (with methods like ```itoa```) apart from the ones specific to the microcontroller.
 
