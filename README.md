@@ -30,6 +30,8 @@
 
 ## 1 - Installation instructions (Simplicity Studio v4)
 
+The following instructions are used when you want to be able to use `dbprint` in every project you create. Place the source files somewhere safe so you don't accidentally delete them!
+
 ### 1.1 - Add "dbprint.c" and "dbprint.h" to your project
 
 Open the project settings using `File > Properties > C/C++ General > Paths and Symbols`.
