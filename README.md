@@ -114,6 +114,10 @@ void dbinfoInt_hex(char *message1, int32_t value, char *message2);
 void dbwarnInt_hex(char *message1, int32_t value, char *message2);
 void dbcritInt_hex(char *message1, int32_t value, char *message2);
 
+char dbReadChar();
+uint8_t dbReadInt();
+void dbReadLine(char *buf);
+
 void uint32_to_charHex(char *buf, uint32_t value, bool spacing);
 void uint32_to_charDec(char *buf, uint32_t value);
 
@@ -154,6 +158,26 @@ dbprintlnInt_hex(value); /* Go to next line */
 
 /* The methods above also work for printing "signed int" values like: */
 int32_t intValue = -42;
+```
+
+```C
+/* Read a character and check wich one it is */
+dbprint("Type 'y' or 'n': ");
+char test = dbReadChar();
+if (test == 'y') dbprintln("Yes");
+if (test == 'n') dbprintln("No");
+
+/* Read a character and convert it to a uint8_t value, print it afterwards */
+dbprint("Type a number (1 character): ");
+uint8_t test2 = dbReadInt();
+dbprintlnInt(test2);
+
+/* Read a line and print it, press enter to stop typing.
+ * It also stops when DBPRINT_BUFFER_SIZE is reached. */
+dbprint("Type a line: ");
+char testArray[DBPRINT_BUFFER_SIZE];
+dbReadLine(testArray);
+dbprintln(testArray);
 ```
 
 ### 2.2.2 - More advanced functions
