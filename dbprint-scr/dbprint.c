@@ -2,7 +2,7 @@
  * @file dbprint.c
  * @brief Homebrew println/printf replacement "DeBugPRINT".
  * @details Originally designed for use on the Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48).
- * @version 3.7
+ * @version 3.8
  * @author Brecht Van Eeckhoudt
  *
  * ******************************************************************************
@@ -51,8 +51,18 @@
  *   v3.5: Add USART0 IRQ handlers.
  *   v3.6: Add the ability to print (u)int values as INFO, WARN or CRIT lines.
  *   v3.7: Add separate "_hex" methods for dbinfo/warn/critInt instead of a boolean to select (hexa)decimal notation.
+ *   v3.8: Add ReadChar-Int-Line methods.
  *
- *   TODO: Use getters and setters for the interrupt buffers? (v4.0)
+ *   TODO (maybe):
+ *     - Separate back-end <-> MCU specific code?
+ *     - Use getters and setters instead of "extern" for the interrupt buffers?
+ *         -> Not safe if multiple ISR's are using the same "extern"!
+ *         -> Use "atomic" stuff when an action has to be performed before other interrupts can be called?
+ *         -> CORE_ENTER_ATOMIC() ? ~ disable certain interrupts
+ *     - Does dbprint.c code still compiles when #define DEBUGGING is gone?
+ *
+ *     - GitHub: Add "debugging.h" file as example.
+ *     - Github: Explain other method of importing?
  *
  * ******************************************************************************
  *
@@ -384,6 +394,10 @@ void dbprint (char *message)
 /**************************************************************************//**
  * @brief
  *   Print a string (char array) to USARTx and go to the next line.
+ *
+ * @note
+ *   If the input is not a string (ex.: "Hello world!") but a char array,
+ *   the input message (array) needs to end with NULL ('\0')!
  *
  * @param[in] message
  *   The string to print to USARTx.
@@ -814,11 +828,82 @@ void dbprintlnInt_hex (int32_t value)
 
 /**************************************************************************//**
  * @brief
+ *   Read a character from USARTx.
+ *
+ * @note
+ *   To read a uint8_t value you can simply cast the char.
+ *   Specific methods exist to read uint16_t and uint32_t values:
+ *     - uint16_t USART_RxDouble(USART_TypeDef *usart);
+ *     - uint32_t USART_RxDoubleExt(USART_TypeDef *usart);
+ *
+ * @return
+ *   The character read from USARTx.
+ *****************************************************************************/
+char dbReadChar ()
+{
+	return (USART_Rx(dbpointer));
+}
+
+
+/**************************************************************************//**
+ * @brief
+ *   Read a decimal character from USARTx and convert it to a uint8_t value.
+ *
+ * @return
+ *   The converted uint8_t value.
+ *****************************************************************************/
+uint8_t dbReadInt ()
+{
+	/* Method expects a char array ending with a null termination character */
+	char value[2];
+	value[0]= dbReadChar();
+	value[1] = '\0';
+
+	return (charDec_to_uint32(value));
+}
+
+
+/**************************************************************************//**
+ * @brief
+ *   Read a string (char array) from USARTx.
+ *
+ * @note
+ *   The reading stops when a CR character is received or the maximum
+ *   length (DBPRINT_BUFFER_SIZE) is reached.
+ *
+ * @param[in] buf
+ *   The buffer to put the resulting string in.
+ *   This needs to have a length of DBPRINT_BUFFER_SIZE for the function
+ *   to work properly: "char buf[DBPRINT_BUFFER_SIZE];"!
+ *****************************************************************************/
+void dbReadLine (char *buf)
+{
+	for (uint32_t i = 0; i < DBPRINT_BUFFER_SIZE - 1 ; i++ )
+	{
+		char localBuffer = USART_Rx(dbpointer);
+
+		/* Check if a CR character is received */
+		if (localBuffer == '\r')
+		{
+			/* End with a null termination character, expected by the dbprintln method */
+			buf[i] = '\0';
+			break;
+		}
+		else
+		{
+			buf[i] = localBuffer;
+		}
+	}
+}
+
+
+/**************************************************************************//**
+ * @brief
  *   Convert a uint32_t value to a hexadecimal char array (string).
  *
  * @param[out] buf
  *   The buffer to put the resulting string in.
- *   This needs have a length of 9: "char buf[9];"!
+ *   This needs to have a length of 9: "char buf[9];"!
  *
  * @param[in] value
  *   The uint32_t value to convert to a string.
@@ -879,7 +964,7 @@ void uint32_to_charHex (char *buf, uint32_t value, bool spacing)
  *
  * @param[out] buf
  *   The buffer to put the resulting string in.
- *   This needs have a length of 10: "char buf[10];"!
+ *   This needs to have a length of 10: "char buf[10];"!
  *
  * @param[in] value
  *   The uint32_t value to convert to a string.
