@@ -3,7 +3,6 @@
 ![GitHub Release Date](https://img.shields.io/github/release-date/Fescron/dbprint.svg)
 ![GitHub release](https://img.shields.io/github/release/Fescron/dbprint.svg)
 ![GitHub last commit](https://img.shields.io/github/last-commit/Fescron/dbprint.svg)
-
 ![Target device](https://img.shields.io/badge/target%20device-EFM32HG322F64G-yellow.svg)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/Fescron/dbprint.svg)
 
