@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @file dbprint.h
  * @brief Homebrew println/printf replacement "DeBugPRINT".
- * @version 3.8
+ * @version 3.9
  * @author Brecht Van Eeckhoudt
  ******************************************************************************/
 
@@ -43,8 +43,8 @@ extern volatile char dbprint_tx_buffer[DBPRINT_BUFFER_SIZE];
 /* Prototypes */
 void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool interrupts);
 
-void dbAlert ();
-void dbClear ();
+void dbAlert (void);
+void dbClear (void);
 
 void dbprint (char *message);
 void dbprintln (char *message);
@@ -70,8 +70,8 @@ void dbinfoInt_hex (char *message1, int32_t value, char *message2);
 void dbwarnInt_hex (char *message1, int32_t value, char *message2);
 void dbcritInt_hex (char *message1, int32_t value, char *message2);
 
-char dbReadChar ();
-uint8_t dbReadInt ();
+char dbReadChar (void);
+uint8_t dbReadInt (void);
 void dbReadLine (char *buf);
 
 void uint32_to_charHex (char *buf, uint32_t value, bool spacing);

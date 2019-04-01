@@ -2,7 +2,7 @@
  * @file dbprint.c
  * @brief Homebrew println/printf replacement "DeBugPRINT".
  * @details Originally designed for use on the Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48).
- * @version 3.8
+ * @version 3.9
  * @author Brecht Van Eeckhoudt
  *
  * ******************************************************************************
@@ -52,6 +52,7 @@
  *   v3.6: Add the ability to print (u)int values as INFO, WARN or CRIT lines.
  *   v3.7: Add separate "_hex" methods for dbinfo/warn/critInt instead of a boolean to select (hexa)decimal notation.
  *   v3.8: Add ReadChar-Int-Line methods.
+ *   v3.9: Add "void" between argument brackets were before nothing was.
  *
  *   TODO (maybe):
  *     - Separate back-end <-> MCU specific code?
@@ -349,7 +350,7 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
  * @details
  *   Print the "bell" (alert) character to USARTx.
  *****************************************************************************/
-void dbAlert ()
+void dbAlert (void)
 {
 	USART_Tx(dbpointer, '\a');
 }
@@ -363,7 +364,7 @@ void dbAlert ()
  *   Print the "form feed" character to USARTx. Accessing old data is still
  *   possible by scrolling up in the serial port program.
  *****************************************************************************/
-void dbClear ()
+void dbClear (void)
 {
 	USART_Tx(dbpointer, '\f');
 }
@@ -839,7 +840,7 @@ void dbprintlnInt_hex (int32_t value)
  * @return
  *   The character read from USARTx.
  *****************************************************************************/
-char dbReadChar ()
+char dbReadChar (void)
 {
 	return (USART_Rx(dbpointer));
 }
@@ -852,7 +853,7 @@ char dbReadChar ()
  * @return
  *   The converted uint8_t value.
  *****************************************************************************/
-uint8_t dbReadInt ()
+uint8_t dbReadInt (void)
 {
 	/* Method expects a char array ending with a null termination character */
 	char value[2];
