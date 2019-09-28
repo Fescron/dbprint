@@ -2,142 +2,129 @@
  * @file dbprint.c
  * @brief Homebrew println/printf replacement "DeBugPRINT".
  * @details Originally designed for use on the Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48).
- * @version 3.9
+ * @version 5.0
  * @author Brecht Van Eeckhoudt
- *
- * ******************************************************************************
- *
- * @section License
- *
- *   Some methods use code obtained from examples from Silicon Labs,
- *   these sections are licensed under the Silabs License Agreement. See the file
- *   "Silabs_License_Agreement.txt" for details. Before using this software for
- *   any purpose, you must agree to the terms of that agreement.
- *
- *   Code was obtained from examples from "https://github.com/SiliconLabs/peripheral_examples":
- *      - usart/async_polled/src/main_s0.c    (version 0.0.1)
- *      - usart/async_interrupt/src/main_s0.c (version 0.0.1)
- *
- * ******************************************************************************
- *
- * @note
- *   The Energy profiler in Simplicity Studio seems to use VCOM (on-board UART to USB converter)somehow,
- *   change to using an external UART adapter if both the energy profiler and UART debugging
- *   are necessary at the same time!
- *   If the energy profiler was used and the code functionality was switched, physically replug the board
- *   to make sure VCOM UART starts working again!
  *
  * ******************************************************************************
  *
  * @section Versions
  *
- *   Please check "https://github.com/Fescron/dbprint" to find the latest version of dbprint!
+ *   Please check https://github.com/Fescron/dbprint to find the latest version of dbprint!
  *
- *   v1.0: "define" used to jump between VCOM or other mode, itoa (<stdlib.h>) used aswell as stdio.h
- *   v1.1: Separated printInt method in a separate function for printing "int32_t" and "uint32_t" values.
- *   v1.2: Added more options to the initialize method (location selection & boolean if VCOM is used).
- *   v2.0: Restructure files to be used in other projects, added a lot more documentation, added "dbAlert" and "dbClear" methods.
- *   v2.1: Add interrupt functionality.
- *   v2.2: Add parse functions, separated method for printing uint values in a separate one for DEC and HEX notation.
- *   v2.3: Updated documentation.
- *   v2.4: Fix notes.
- *   v2.5: Separated method for printing int values in a separate one for DEC and HEX notation.
- *   v2.6: Stop using itoa (<stdlib.h>) in all methods.
- *   v3.0: Simplify number printing, stop using separate methods for uint and int values.
- *   v3.1: Remove useless if... check.
- *   v3.2: Add the ability to print text in a color.
- *   v3.3: Add info, warning and critical error printing methods.
- *   v3.4: Add printInt(_hex) methods that directly go to a new line.
- *   v3.5: Add USART0 IRQ handlers.
- *   v3.6: Add the ability to print (u)int values as INFO, WARN or CRIT lines.
- *   v3.7: Add separate "_hex" methods for dbinfo/warn/critInt instead of a boolean to select (hexa)decimal notation.
- *   v3.8: Add ReadChar-Int-Line methods.
- *   v3.9: Add "void" between argument brackets were before nothing was.
- *
- *   TODO (maybe):
- *     - Separate back-end <-> MCU specific code?
- *     - Use getters and setters instead of "extern" for the interrupt buffers?
- *         -> Not safe if multiple ISR's are using the same "extern"!
- *         -> Use "atomic" stuff when an action has to be performed before other interrupts can be called?
- *         -> CORE_ENTER_ATOMIC() ? ~ disable certain interrupts
- *     - Does dbprint.c code still compiles when #define DEBUGGING is gone?
- *
- *     - GitHub: Add "debugging.h" file as example.
- *     - Github: Explain other method of importing?
+ *   @li v1.0: "define" used to jump between VCOM or other mode, itoa (<stdlib.h>) used aswell as stdio.h
+ *   @li v1.1: Separated printInt method in a separate function for printing "int32_t" and "uint32_t" values.
+ *   @li v1.2: Added more options to the initialize method (location selection & boolean if VCOM is used).
+ *   @li v2.0: Restructured files to be used in other projects, added a lot more documentation, added "dbAlert" and "dbClear" methods.
+ *   @li v2.1: Added interrupt functionality.
+ *   @li v2.2: Added parse functions, separated method for printing uint values in a separate one for DEC and HEX notation.
+ *   @li v2.3: Updated documentation.
+ *   @li v2.4: Fixed notes.
+ *   @li v2.5: Separated method for printing int values in a separate one for DEC and HEX notation.
+ *   @li v2.6: Stopped using itoa (<stdlib.h>) in all methods.
+ *   @li v3.0: Simplified number printing, stopped using separate methods for uint and int values.
+ *   @li v3.1: Removed useless if... check.
+ *   @li v3.2: Added the ability to print text in a color.
+ *   @li v3.3: Added info, warning and critical error printing methods.
+ *   @li v3.4: Added printInt(_hex) methods that directly go to a new line.
+ *   @li v3.5: Added USART0 IRQ handlers.
+ *   @li v3.6: Added the ability to print (u)int values as INFO, WARN or CRIT lines.
+ *   @li v3.7: Added separate "_hex" methods for dbinfo/warn/critInt instead of a boolean to select (hexa)decimal notation.
+ *   @li v3.8: Added ReadChar-Int-Line methods.
+ *   @li v3.9: Added "void" between argument brackets were before nothing was.
+ *   @li v4.0: Added more documentation.
+ *   @li v4.1: Added color reset before welcome message.
+ *   @li v5.0: Made uint-char conversion methods static, moved color functionality to enum,
+ *             changed interrupt functionality to use getters and setters.
  *
  * ******************************************************************************
  *
- *  @section Alternate Functionality Pinout
- *
- *      Location |  #0  |  #1  |  #2  |  #3  |  #4  |  #5  |  #6  |     ||===================||
- *      -----------------------------------------------------------     || baudrate = 115200 ||
- *      US0_RX   | PE11 |      | PC10 | PE12 | PB08 | PC01 | PC01 |     || 8 databits        ||
- *      US0_TX   | PE10 |      |      | PE13 | PB07 | PC00 | PC00 |     || 1 stopbit         ||
- *      -----------------------------------------------------------     || no parity         ||
- *      US1_RX   | PC01 |      | PD06 | PD06 | PA00 | PC02 |      |     ||===================||
- *      US1_TX   | PC00 |      | PD07 | PD07 | PF02 | PC01 |      |
- *
- *      VCOM: USART1 #4 (USART0 not possible) RX: PA0 -- TX: PF2
+ * @todo
+ *   - Interrupt calls: call from one to the other to reduce code lines.
+ *   - Separate back-end <-> MCU specific code?
+ *   - Use getters and setters instead of "extern" for the interrupt buffers?
+ *       - Not safe if multiple ISR's are using the same "extern"!
+ *       - Use "atomic" stuff when an action has to be performed before other interrupts can be called?
+ *       - CORE_ENTER_ATOMIC() ? ~ disable certain interrupts
  *
  * ******************************************************************************
  *
- * @section Debug using VCOM (no interrupt functionality)
+ * @section License
  *
- *   dbprint_INIT(USART1, 4, true, false);
+ *   **Copyright (C) 2019 - Brecht Van Eeckhoudt**
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the **GNU General Public License** as published by
+ *   the Free Software Foundation, either **version 3** of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   *A copy of the GNU General Public License can be found in the `LICENSE`
+ *   file along with this source code.*
+ *
+ *   @n
+ *
+ *   Some methods also use code obtained from examples from [Silicon Labs' GitHub](https://github.com/SiliconLabs/peripheral_examples).
+ *   These sections are licensed under the Silabs License Agreement. See the file
+ *   "Silabs_License_Agreement.txt" for details. Before using this software for
+ *   any purpose, you must agree to the terms of that agreement.
  *
  * ******************************************************************************
  *
- * @section "C" keywords
- *
- *   Volatile
- *     The “volatile” type indicates to the compiler that the data is not normal memory,
- *     and could change at unexpected times. Hardware registers are often volatile,
- *     and so are variables which get changed in interrupts.
- *
- *   Extern
- *     Declare the global variables in headers (and use the "extern" keyword there)
- *     and actually define them in the appropriate source file.
- *
- *   Static
- *     Static variable inside a function:
- *         The variable keeps its value between invocations.
- *     Static global variable or function:
- *         The variable or function is only "seen" in the file it's declared in.
- *
- * ******************************************************************************
- *
- * @section Bits, bytes, nibbles and unsigned/signed integer value ranges
- *
- *     - 1 nibble = 4 bits (0b1111      = 0xF )
- *     - 1 byte   = 8 bits (0b1111 1111 = 0xFF)
- *
- *     - uint8_t  ~ unsigned char  = 1 byte  (0 > 255           or 0xFF)
- *     - uint16_t ~ unsigned short = 2 bytes (0 > 65 535        or 0xFFFF)
- *     - uint32_t ~ unsigned int   = 4 bytes (0 > 4 294 967 295 or 0xFFFFFFFF)
- *
- *     - int8_t   ~ signed char    = 1 byte  (-128 > 127)
- *     - int16_t  ~ signed short   = 2 bytes (-32 768 > 32 767)
- *     - int32_t  ~ signed int     = 4 bytes (-2 147 483 648 > 2 147 483 647)
+ * @attention
+ *   See the file `dbprint_documentation.h` for a lot of useful documentation!
  *
  ******************************************************************************/
 
 
+#include <stdint.h>        /* (u)intXX_t */
+#include <stdbool.h>       /* "bool", "true", "false" */
+#include "em_cmu.h"        /* Clock Management Unit */
+#include "em_gpio.h"       /* General Purpose IO (GPIO) peripheral API */
+#include "em_usart.h"      /* Universal synchr./asynchr. receiver/transmitter (USART/UART) Peripheral API */
+
+#include "debug_dbprint.h" /* Enable or disable printing to UART for debugging */
+
+
+#if DEBUG_DBPRINT == 1 /* DEBUG_DBPRINT */
+
 #include "dbprint.h"
 
 
+/* Local definitions */
 /* Macro definitions that return a character when given a value */
 #define TO_HEX(i) (i <= 9 ? '0' + i : 'A' - 10 + i) /* "?:" = ternary operator (return ['0' + i] if [i <= 9] = true, ['A' - 10 + i] if false) */
 #define TO_DEC(i) (i <= 9 ? '0' + i : '?') /* return "?" if out of range */
 
+/* ANSI colors */
+#define COLOR_RED     "\x1b[31m"
+#define COLOR_GREEN   "\x1b[32m"
+#define COLOR_BLUE    "\x1b[34m"
+#define COLOR_CYAN    "\x1b[36m"
+#define COLOR_MAGENTA "\x1b[35m"
+#define COLOR_YELLOW  "\x1b[33m"
+#define COLOR_RESET   "\x1b[0m"
 
-/* Global variables */
+
+/** Public (`extern`) variable to store the settings (pointer). */
 USART_TypeDef* dbpointer;
 
-/* Volatile global variables */
-volatile bool dbprint_rxdata = false; /* true if there is a line of data received */
-volatile char dbprint_rx_buffer[DBPRINT_BUFFER_SIZE];
-volatile char dbprint_tx_buffer[DBPRINT_BUFFER_SIZE];
 
+/* Local variables
+ *   `volatile` because they're modified by an interrupt service routine. */
+static volatile bool dbprint_rxdata = false; /* true if there is a line of data received */
+static volatile char dbprint_rx_buffer[DBPRINT_BUFFER_SIZE];
+static volatile char dbprint_tx_buffer[DBPRINT_BUFFER_SIZE];
+
+
+/* Local prototypes */
+static void uint32_to_charHex (char *buf, uint32_t value, bool spacing);
+static void uint32_to_charDec (char *buf, uint32_t value);
+static uint32_t charDec_to_uint32 (char *buf);
+static uint32_t charHex_to_uint32 (char *buf);
 
 
 /**************************************************************************//**
@@ -148,15 +135,15 @@ volatile char dbprint_tx_buffer[DBPRINT_BUFFER_SIZE];
  *   Pointer to USARTx.
  *
  * @param[in] location
- *   Location for the pin routing.
+ *   Location for pin routing.
  *
  * @param[in] vcom
- *   @li true - Isolation switch enabled by setting PA9 high so the "Virtual com port (CDC)" can be used.
- *   @li false - Isolation switch disabled on the Happy Gecko board.
+ *   @li `true` - Isolation switch enabled by setting PA9 high so the **Virtual COM port (CDC)** can be used.
+ *   @li `false` - Isolation switch disabled on the Happy Gecko board.
  *
  * @param[in] interrupts
- *   @li true - Enable interrupt functionality.
- *   @li false - No interrupt functionality is initialized.
+ *   @li `true` - Enable interrupt functionality.
+ *   @li `false` - No interrupt functionality is initialized.
  *****************************************************************************/
 void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool interrupts)
 {
@@ -321,6 +308,7 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 		}
 
 		/* Print welcome string */
+		dbprint(COLOR_RESET);
 		dbprintln("\a\r\f### UART initialized (interrupt mode) ###");
 		dbinfo("This is an info message.");
 		dbwarn("This is a warning message.");
@@ -334,6 +322,7 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
 	/* Print welcome string (and make an alert sound in the console) if not in interrupt mode */
 	else
 	{
+		dbprint(COLOR_RESET);
 		dbprintln("\a\r\f### UART initialized (no interrupts) ###");
 		dbinfo("This is an info message.");
 		dbwarn("This is a warning message.");
@@ -348,7 +337,7 @@ void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool int
  *   Sound an alert in the terminal.
  *
  * @details
- *   Print the "bell" (alert) character to USARTx.
+ *   Print the *bell* (alert) character to USARTx.
  *****************************************************************************/
 void dbAlert (void)
 {
@@ -361,7 +350,7 @@ void dbAlert (void)
  *   Clear the terminal.
  *
  * @details
- *   Print the "form feed" character to USARTx. Accessing old data is still
+ *   Print the *form feed* character to USARTx. Accessing old data is still
  *   possible by scrolling up in the serial port program.
  *****************************************************************************/
 void dbClear (void)
@@ -375,8 +364,8 @@ void dbClear (void)
  *   Print a string (char array) to USARTx.
  * 
  * @note
- *   If the input is not a string (ex.: "Hello world!") but a char array,
- *   the input message (array) needs to end with NULL ('\0')!
+ *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
+ *   the input message (array) needs to end with NULL (`\0`)!
  *
  * @param[in] message
  *   The string to print to USARTx.
@@ -397,8 +386,8 @@ void dbprint (char *message)
  *   Print a string (char array) to USARTx and go to the next line.
  *
  * @note
- *   If the input is not a string (ex.: "Hello world!") but a char array,
- *   the input message (array) needs to end with NULL ('\0')!
+ *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
+ *   the input message (array) needs to end with NULL (`\0`)!
  *
  * @param[in] message
  *   The string to print to USARTx.
@@ -420,56 +409,49 @@ void dbprintln (char *message)
  *   Print a string (char array) to USARTx in a given color.
  *
  * @note
- *   If the input is not a string (ex.: "Hello world!") but a char array,
- *   the input message (array) needs to end with NULL ('\0')!
+ *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
+ *   the input message (array) needs to end with NULL (`\0`)!
  *
  * @param[in] message
  *   The string to print to USARTx.
  *
  * @param[in] color
  *   The color to print the text in.
- *   @li 0 - Reset color
- *   @li 1 - Red
- *   @li 2 - Green
- *   @li 3 - Blue
- *   @li 4 - Cyan
- *   @li 5 - Magenta
- *   @li 6 - Yellow
  *****************************************************************************/
-void dbprint_color (char *message, uint8_t color)
+void dbprint_color (char *message, dbprint_color_t color)
 {
 	switch (color)
 	{
-		case 0:
+		case DEFAULT_COLOR:
 			dbprint(COLOR_RESET);
 			dbprint(message);
 			break;
-		case 1:
+		case RED:
 			dbprint(COLOR_RED);
 			dbprint(message);
 			dbprint(COLOR_RESET);
 			break;
-		case 2:
+		case GREEN:
 			dbprint(COLOR_GREEN);
 			dbprint(message);
 			dbprint(COLOR_RESET);
 			break;
-		case 3:
+		case BLUE:
 			dbprint(COLOR_BLUE);
 			dbprint(message);
 			dbprint(COLOR_RESET);
 			break;
-		case 4:
+		case CYAN:
 			dbprint(COLOR_CYAN);
 			dbprint(message);
 			dbprint(COLOR_RESET);
 			break;
-		case 5:
+		case MAGENTA:
 			dbprint(COLOR_MAGENTA);
 			dbprint(message);
 			dbprint(COLOR_RESET);
 			break;
-		case 6:
+		case YELLOW:
 			dbprint(COLOR_YELLOW);
 			dbprint(message);
 			dbprint(COLOR_RESET);
@@ -486,23 +468,16 @@ void dbprint_color (char *message, uint8_t color)
  *   Print a string (char array) to USARTx in a given color and go to the next line.
  *
  * @note
- *   If the input is not a string (ex.: "Hello world!") but a char array,
- *   the input message (array) needs to end with NULL ('\0')!
+ *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
+ *   the input message (array) needs to end with NULL (`\0`)!
  *
  * @param[in] message
  *   The string to print to USARTx.
  *
  * @param[in] color
  *   The color to print the text in.
- *   @li 0 - Reset color
- *   @li 1 - Red
- *   @li 2 - Green
- *   @li 3 - Blue
- *   @li 4 - Cyan
- *   @li 5 - Magenta
- *   @li 6 - Yellow
  *****************************************************************************/
-void dbprintln_color (char *message, uint8_t color)
+void dbprintln_color (char *message, dbprint_color_t color)
 {
 	dbprint_color(message, color);
 
@@ -519,8 +494,8 @@ void dbprintln_color (char *message, uint8_t color)
  *   Print an info string (char array) to USARTx and go to the next line.
  *
  * @note
- *   If the input is not a string (ex.: "Hello world!") but a char array,
- *   the input message (array) needs to end with NULL ('\0')!
+ *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
+ *   the input message (array) needs to end with NULL (`\0`)!
  *
  * @param[in] message
  *   The string to print to USARTx.
@@ -537,16 +512,16 @@ void dbinfo (char *message)
  *   Print a warning string (char array) in yellow to USARTx and go to the next line.
  *
  * @note
- *   If the input is not a string (ex.: "Hello world!") but a char array,
- *   the input message (array) needs to end with NULL ('\0')!
+ *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
+ *   the input message (array) needs to end with NULL (`\0`)!
  *
  * @param[in] message
  *   The string to print to USARTx.
  *****************************************************************************/
 void dbwarn (char *message)
 {
-	dbprint_color("WARN: ", 6);
-	dbprintln_color(message, 6);
+	dbprint_color("WARN: ", YELLOW);
+	dbprintln_color(message, YELLOW);
 }
 
 
@@ -555,16 +530,16 @@ void dbwarn (char *message)
  *   Print a critical error string (char array) in red to USARTx and go to the next line.
  *
  * @note
- *   If the input is not a string (ex.: "Hello world!") but a char array,
- *   the input message (array) needs to end with NULL ('\0')!
+ *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
+ *   the input message (array) needs to end with NULL (`\0`)!
  *
  * @param[in] message
  *   The string to print to USARTx.
  *****************************************************************************/
 void dbcrit (char *message)
 {
-	dbprint_color("CRIT: ", 1);
-	dbprintln_color(message, 1);
+	dbprint_color("CRIT: ", RED);
+	dbprintln_color(message, RED);
 }
 
 
@@ -574,8 +549,8 @@ void dbcrit (char *message)
  *   with "INFO: " added in front in decimal notation and go to the next line.
  *
  * @note
- *   If the input is not a string (ex.: "Hello world!") but a char array,
- *   the input message (array) needs to end with NULL ('\0')!
+ *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
+ *   the input message (array) needs to end with NULL (`\0`)!
  *
  * @param[in] message1
  *   The first part of the string to print to USARTx.
@@ -602,8 +577,8 @@ void dbinfoInt (char *message1, int32_t value, char *message2)
  *   The value is in the color white, the rest is yellow.
  *
  * @note
- *   If the input is not a string (ex.: "Hello world!") but a char array,
- *   the input message (array) needs to end with NULL ('\0')!
+ *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
+ *   the input message (array) needs to end with NULL (`\0`)!
  *
  * @param[in] message1
  *   The first part of the string to print to USARTx.
@@ -616,10 +591,10 @@ void dbinfoInt (char *message1, int32_t value, char *message2)
  *****************************************************************************/
 void dbwarnInt (char *message1, int32_t value, char *message2)
 {
-	dbprint_color("WARN: ", 6);
-	dbprint_color(message1, 6);
+	dbprint_color("WARN: ", YELLOW);
+	dbprint_color(message1, YELLOW);
 	dbprintInt(value);
-	dbprintln_color(message2, 6);
+	dbprintln_color(message2, YELLOW);
 }
 
 
@@ -630,8 +605,8 @@ void dbwarnInt (char *message1, int32_t value, char *message2)
  *   The value is in the color white, the rest is red.
  *
  * @note
- *   If the input is not a string (ex.: "Hello world!") but a char array,
- *   the input message (array) needs to end with NULL ('\0')!
+ *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
+ *   the input message (array) needs to end with NULL (`\0`)!
  *
  * @param[in] message1
  *   The first part of the string to print to USARTx.
@@ -644,10 +619,10 @@ void dbwarnInt (char *message1, int32_t value, char *message2)
  *****************************************************************************/
 void dbcritInt (char *message1, int32_t value, char *message2)
 {
-	dbprint_color("CRIT: ", 1);
-	dbprint_color(message1, 1);
+	dbprint_color("CRIT: ", RED);
+	dbprint_color(message1, RED);
 	dbprintInt(value);
-	dbprintln_color(message2, 1);
+	dbprintln_color(message2, RED);
 }
 
 
@@ -657,8 +632,8 @@ void dbcritInt (char *message1, int32_t value, char *message2)
  *   with "INFO: " added in front in hexadecimal notation and go to the next line.
  *
  * @note
- *   If the input is not a string (ex.: "Hello world!") but a char array,
- *   the input message (array) needs to end with NULL ('\0')!
+ *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
+ *   the input message (array) needs to end with NULL (`\0`)!
  *
  * @param[in] message1
  *   The first part of the string to print to USARTx.
@@ -685,8 +660,8 @@ void dbinfoInt_hex (char *message1, int32_t value, char *message2)
  *   The value is in the color white, the rest is yellow.
  *
  * @note
- *   If the input is not a string (ex.: "Hello world!") but a char array,
- *   the input message (array) needs to end with NULL ('\0')!
+ *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
+ *   the input message (array) needs to end with NULL (`\0`)!
  *
  * @param[in] message1
  *   The first part of the string to print to USARTx.
@@ -699,10 +674,10 @@ void dbinfoInt_hex (char *message1, int32_t value, char *message2)
  *****************************************************************************/
 void dbwarnInt_hex (char *message1, int32_t value, char *message2)
 {
-	dbprint_color("WARN: ", 6);
-	dbprint_color(message1, 6);
+	dbprint_color("WARN: ", YELLOW);
+	dbprint_color(message1, YELLOW);
 	dbprintInt_hex(value);
-	dbprintln_color(message2, 6);
+	dbprintln_color(message2, YELLOW);
 }
 
 
@@ -713,8 +688,8 @@ void dbwarnInt_hex (char *message1, int32_t value, char *message2)
  *   The value is in the color white, the rest is red.
  *
  * @note
- *   If the input is not a string (ex.: "Hello world!") but a char array,
- *   the input message (array) needs to end with NULL ('\0')!
+ *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
+ *   the input message (array) needs to end with NULL (`\0`)!
  *
  * @param[in] message1
  *   The first part of the string to print to USARTx.
@@ -727,10 +702,10 @@ void dbwarnInt_hex (char *message1, int32_t value, char *message2)
  *****************************************************************************/
 void dbcritInt_hex (char *message1, int32_t value, char *message2)
 {
-	dbprint_color("CRIT: ", 1);
-	dbprint_color(message1, 1);
+	dbprint_color("CRIT: ", RED);
+	dbprint_color(message1, RED);
 	dbprintInt_hex(value);
-	dbprintln_color(message2, 1);
+	dbprintln_color(message2, RED);
 }
 
 
@@ -739,8 +714,8 @@ void dbcritInt_hex (char *message1, int32_t value, char *message2)
  *   Print a number in decimal notation to USARTx.
  *
  * @param[in] value
- *   The number to print to USARTx.
- *   This can be of type "uint32_t" or "int32_t".
+ *   The number to print to USARTx.@n
+ *   This can be of type `uint32_t` or `int32_t`.
  *****************************************************************************/
 void dbprintInt (int32_t value)
 {
@@ -775,8 +750,8 @@ void dbprintInt (int32_t value)
  *   Print a number in decimal notation to USARTx and go to the next line.
  *
  * @param[in] value
- *   The number to print to USARTx.
- *   This can be of type "uint32_t" or "int32_t".
+ *   The number to print to USARTx.@n
+ *   This can be of type `uint32_t` or `int32_t`.
  *****************************************************************************/
 void dbprintlnInt (int32_t value)
 {
@@ -795,8 +770,8 @@ void dbprintlnInt (int32_t value)
  *   Print a number in hexadecimal notation to USARTx.
  *
  * @param[in] value
- *   The number to print to USARTx.
- *   This can be of type "uint32_t" or "int32_t".
+ *   The number to print to USARTx.@n
+ *   This can be of type `uint32_t` or `int32_t`.
  *****************************************************************************/
 void dbprintInt_hex (int32_t value)
 {
@@ -812,8 +787,8 @@ void dbprintInt_hex (int32_t value)
  *   Print a number in hexadecimal notation to USARTx and go to the next line.
  *
  * @param[in] value
- *   The number to print to USARTx.
- *   This can be of type "uint32_t" or "int32_t".
+ *   The number to print to USARTx.@n
+ *   This can be of type `uint32_t` or `int32_t`.
  *****************************************************************************/
 void dbprintlnInt_hex (int32_t value)
 {
@@ -832,10 +807,10 @@ void dbprintlnInt_hex (int32_t value)
  *   Read a character from USARTx.
  *
  * @note
- *   To read a uint8_t value you can simply cast the char.
- *   Specific methods exist to read uint16_t and uint32_t values:
- *     - uint16_t USART_RxDouble(USART_TypeDef *usart);
- *     - uint32_t USART_RxDoubleExt(USART_TypeDef *usart);
+ *   To read a `uint8_t` value you can simply cast the char.@n
+ *   Specific methods exist to read `uint16_t` and `uint32_t` values:
+ *     - `uint16_t USART_RxDouble(USART_TypeDef *usart);`
+ *     - `uint32_t USART_RxDoubleExt(USART_TypeDef *usart);`
  *
  * @return
  *   The character read from USARTx.
@@ -848,10 +823,10 @@ char dbReadChar (void)
 
 /**************************************************************************//**
  * @brief
- *   Read a decimal character from USARTx and convert it to a uint8_t value.
+ *   Read a decimal character from USARTx and convert it to a `uint8_t` value.
  *
  * @return
- *   The converted uint8_t value.
+ *   The converted `uint8_t` value.
  *****************************************************************************/
 uint8_t dbReadInt (void)
 {
@@ -869,13 +844,13 @@ uint8_t dbReadInt (void)
  *   Read a string (char array) from USARTx.
  *
  * @note
- *   The reading stops when a CR character is received or the maximum
- *   length (DBPRINT_BUFFER_SIZE) is reached.
+ *   The reading stops when a `CR` character is received or the maximum
+ *   length (`DBPRINT_BUFFER_SIZE`) is reached.
  *
  * @param[in] buf
- *   The buffer to put the resulting string in.
- *   This needs to have a length of DBPRINT_BUFFER_SIZE for the function
- *   to work properly: "char buf[DBPRINT_BUFFER_SIZE];"!
+ *   The buffer to put the resulting string in.@n
+ *   **This needs to have a length of `DBPRINT_BUFFER_SIZE` for the function
+ *   to work properly: `char buf[DBPRINT_BUFFER_SIZE];`!**
  *****************************************************************************/
 void dbReadLine (char *buf)
 {
@@ -900,20 +875,125 @@ void dbReadLine (char *buf)
 
 /**************************************************************************//**
  * @brief
- *   Convert a uint32_t value to a hexadecimal char array (string).
+ *   Get the value of the RX buffer.
+ *
+ * @note
+ *   Interrupt functionality has to be enabled on initialization for this
+ *   function to work correctly.
+ *
+ * @return
+ *   @li `true` - Data is received in the RX buffer.
+ *   @li `false` - No data is received.
+ *****************************************************************************/
+bool dbGetRX_status (void)
+{
+	return (dbprint_rxdata);
+}
+
+
+/**************************************************************************//**
+ * @brief
+ *   Set the value of the TX buffer and transmit it using interrupts.
+ *
+ * @note
+ *   If the input is not a string (ex.: "`"Hello world!"`") but a char array,
+ *   the input message (array) needs to end with NULL (`\0`)!
+ *
+ * @note
+ *   Interrupt functionality has to be enabled on initialization for this
+ *   function to work correctly.
+ *
+ * @param[in] message
+ *   The string to put in the TX buffer.
+ *****************************************************************************/
+void dbSetAndSend_TXbuffer (char *message)
+{
+	// TODO
+}
+
+
+/**************************************************************************//**
+ * @brief
+ *   Get the value of the RX buffer.
+ *
+ * @note
+ *   Interrupt functionality has to be enabled on initialization for this
+ *   function to work correctly.
+ *
+ * @param[in] buf
+ *   The buffer to put the resulting string in.@n
+ *   **This needs to have a length of `DBPRINT_BUFFER_SIZE` for the function
+ *   to work properly: `char buf[DBPRINT_BUFFER_SIZE];`!**
+ *****************************************************************************/
+void dbGetAndClear_RXbuffer (char *buf)
+{
+	// TODO: needs fixing (buffer not cleared, some TX functionality in here needs to be removed)
+
+	if (dbprint_rxdata)
+	{
+		uint32_t i;
+
+	   /* RX Data Valid Interrupt Enable
+		*   Set when data is available in the receive buffer. Cleared when the receive buffer is empty.
+		*
+		* TX Complete Interrupt Enable
+		*   Set when a transmission has completed and no more data is available in the transmit buffer.
+		*   Cleared when a new transmission starts.
+		*/
+
+	   /* Disable "RX Data Valid Interrupt Enable" and "TX Complete Interrupt Enable" interrupts */
+	   USART_IntDisable(dbpointer, USART_IEN_RXDATAV);
+	   USART_IntDisable(dbpointer, USART_IEN_TXC);
+
+	   /* Copy data from the RX buffer to the given buffer */
+	   for (i = 0; dbprint_rx_buffer[i] != 0 && i < DBPRINT_BUFFER_SIZE-3; i++)
+	   {
+		   buf[i] = dbprint_rx_buffer[i];
+	   }
+
+	   /* Add "new line" characters */
+	   buf[i++] = '\r';
+	   buf[i++] = '\n';
+	   buf[i] = '\0';
+
+	   /* Reset "notification" variable */
+	   dbprint_rxdata = false;
+
+	   /* Enable "RX Data Valid Interrupt" and "TX Complete Interrupt" interrupts */
+	   USART_IntEnable(dbpointer, USART_IEN_RXDATAV);
+	   USART_IntEnable(dbpointer, USART_IEN_TXC);
+
+	   /* Set TX Complete Interrupt Flag (transmission has completed and no more data
+		* is available in the transmit buffer) */
+	   USART_IntSet(dbpointer, USART_IFS_TXC);
+	}
+	else
+	{
+		dbcrit("No data in RX buffer!");
+	}
+}
+
+
+/**************************************************************************//**
+ * @brief
+ *   Convert a `uint32_t` value to a hexadecimal char array (string).
+ *
+ * @note
+ *   This is a static method because it's only internally used in this file
+ *   and called by other methods if necessary.
  *
  * @param[out] buf
- *   The buffer to put the resulting string in.
- *   This needs to have a length of 9: "char buf[9];"!
+ *   The buffer to put the resulting string in.@n
+ *   **This needs to have a length of 9: `char buf[9];`!**
  *
  * @param[in] value
- *   The uint32_t value to convert to a string.
+ *   The `uint32_t` value to convert to a string.
  *
  * @param[in] spacing
- *   @li true - Add spacing between the eight HEX chars to make two groups of four.
- *   @li false - Don't add spacing between the eight HEX chars.
+ *   @li `true` - Add spacing between the eight HEX chars to make two groups of four.
+ *   @li `false` - Don't add spacing between the eight HEX chars.
  *****************************************************************************/
-void uint32_to_charHex (char *buf, uint32_t value, bool spacing)
+static void uint32_to_charHex (char *buf, uint32_t value, bool spacing)
 {
 	/* 4 nibble HEX representation */
 	if (value <= 0xFFFF)
@@ -961,16 +1041,20 @@ void uint32_to_charHex (char *buf, uint32_t value, bool spacing)
 
 /**************************************************************************//**
  * @brief
- *   Convert a uint32_t value to a decimal char array (string).
+ *   Convert a `uint32_t` value to a decimal char array (string).
+ *
+ * @note
+ *   This is a static method because it's only internally used in this file
+ *   and called by other methods if necessary.
  *
  * @param[out] buf
- *   The buffer to put the resulting string in.
- *   This needs to have a length of 10: "char buf[10];"!
+ *   The buffer to put the resulting string in.@n
+ *   **This needs to have a length of 10: `char buf[10];`!**
  *
  * @param[in] value
- *   The uint32_t value to convert to a string.
+ *   The `uint32_t` value to convert to a string.
  *****************************************************************************/
-void uint32_to_charDec (char *buf, uint32_t value)
+static void uint32_to_charDec (char *buf, uint32_t value)
 {
 	if (value == 0)
 	{
@@ -1016,19 +1100,23 @@ void uint32_to_charDec (char *buf, uint32_t value)
 
 /**************************************************************************//**
  * @brief
- *   Convert a string (char array) in decimal notation to a uint32_t value.
+ *   Convert a string (char array) in decimal notation to a `uint32_t` value.
  *
  * @note
- *   If the input is not a string (ex.: "00BA0FA1") but a char array,
- *   the input buffer (array) needs to end with NULL ('\0')!
+ *   If the input is not a string (ex.: `00BA0FA1`) but a char array,
+ *   the input buffer (array) needs to end with NULL (`\0`)!
+ *
+ * @note
+ *   This is a static method because it's only internally used in this file
+ *   and called by other methods if necessary.
  *
  * @param[in] buf
- *   The decimal string to convert to a uint32_t value.
+ *   The decimal string to convert to a `uint32_t` value.
  *
  * @return
- *   The resulting uint32_t value.
+ *   The resulting `uint32_t` value.
  *****************************************************************************/
-uint32_t charDec_to_uint32 (char *buf)
+static uint32_t charDec_to_uint32 (char *buf)
 {
 	/* Value to eventually return */
 	uint32_t value = 0;
@@ -1059,20 +1147,24 @@ uint32_t charDec_to_uint32 (char *buf)
 
 /**************************************************************************//**
  * @brief
- *   Convert a string (char array) in hexadecimal notation to a uint32_t value.
+ *   Convert a string (char array) in hexadecimal notation to a `uint32_t` value.
  *
  * @note
- *   If the input is not a string (ex.: "00120561") but a char array,
- *   the input buffer (array) needs to end with NULL ('\0')!
- *   The input string can't have the prefix "0x".
+ *   If the input is not a string (ex.: `00120561`) but a char array,
+ *   the input buffer (array) needs to end with NULL (`\0`)!@n
+ *   The input string can't have the prefix `0x`.
+ *
+ * @note
+ *   This is a static method because it's only internally used in this file
+ *   and called by other methods if necessary.
  *
  * @param[in] buf
- *   The hexadecimal string to convert to a uint32_t value.
+ *   The hexadecimal string to convert to a `uint32_t` value.
  *
  * @return
- *   The resulting uint32_t value.
+ *   The resulting `uint32_t` value.
  *****************************************************************************/
-uint32_t charHex_to_uint32 (char *buf)
+static uint32_t charHex_to_uint32 (char *buf)
 {
 	/* Value to eventually return */
 	uint32_t value = 0;
@@ -1112,7 +1204,7 @@ uint32_t charHex_to_uint32 (char *buf)
  *   USARTx RX interrupt service routine.
  *
  * @note
- *   The "weak" definition for this method is located in "system_efm32hg.h".
+ *   The *weak* definition for this method is located in `system_efm32hg.h`.
  *****************************************************************************/
 void USART0_RX_IRQHandler(void)
 {
@@ -1149,7 +1241,7 @@ void USART0_RX_IRQHandler(void)
  *   USARTx TX interrupt service routine.
  *
  * @note
- *   The "weak" definition for this method is located in "system_efm32hg.h".
+ *   The *weak* definition for this method is located in `system_efm32hg.h`.
  *****************************************************************************/
 void USART0_TX_IRQHandler(void)
 {
@@ -1183,7 +1275,7 @@ void USART0_TX_IRQHandler(void)
  *   USARTx RX interrupt service routine.
  *
  * @note
- *   The "weak" definition for this method is located in "system_efm32hg.h".
+ *   The *weak* definition for this method is located in `system_efm32hg.h`.
  *****************************************************************************/
 void USART1_RX_IRQHandler(void)
 {
@@ -1220,7 +1312,7 @@ void USART1_RX_IRQHandler(void)
  *   USARTx TX interrupt service routine.
  *
  * @note
- *   The "weak" definition for this method is located in "system_efm32hg.h".
+ *   The *weak* definition for this method is located in `system_efm32hg.h`.
  *****************************************************************************/
 void USART1_TX_IRQHandler(void)
 {
@@ -1248,3 +1340,4 @@ void USART1_TX_IRQHandler(void)
 	}
 }
 
+#endif /* DEBUG_DBPRINT */

@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @file dbprint.h
  * @brief Homebrew println/printf replacement "DeBugPRINT".
- * @version 3.9
+ * @version 5.0
  * @author Brecht Van Eeckhoudt
  ******************************************************************************/
 
@@ -11,36 +11,33 @@
 #define _DBPRINT_H_
 
 
-#include <stdint.h>     /* (u)intXX_t */
-#include <stdbool.h>    /* "bool", "true", "false" */
-#include "em_cmu.h"     /* Clock Management Unit */
-#include "em_gpio.h"    /* General Purpose IO (GPIO) peripheral API */
-#include "em_usart.h"   /* Universal synchr./asynchr. receiver/transmitter (USART/UART) Peripheral API */
+/* Includes necessary for this header file */
+#include <stdint.h>  /* (u)intXX_t */
+#include <stdbool.h> /* "bool", "true", "false" */
 
 
-/* Buffer size */
+/** Public definition to configure the buffer size. */
 #define DBPRINT_BUFFER_SIZE 80
 
 
-/* ANSI colors */
-#define COLOR_RED     "\x1b[31m"
-#define COLOR_GREEN   "\x1b[32m"
-#define COLOR_BLUE    "\x1b[34m"
-#define COLOR_CYAN    "\x1b[36m"
-#define COLOR_MAGENTA "\x1b[35m"
-#define COLOR_YELLOW  "\x1b[33m"
-#define COLOR_RESET   "\x1b[0m"
+/** Enum type for the color selection */
+typedef enum dbprint_colors
+{
+	RED,
+	GREEN,
+	BLUE,
+	CYAN,
+	MAGENTA,
+	YELLOW,
+	DEFAULT_COLOR
+} dbprint_color_t;
 
 
-/* Global variables */
+/** Public variable to store the settings (pointer). */
 extern USART_TypeDef* dbpointer;
 
-extern volatile bool dbprint_rxdata; /* true if there is data received */
-extern volatile char dbprint_rx_buffer[DBPRINT_BUFFER_SIZE];
-extern volatile char dbprint_tx_buffer[DBPRINT_BUFFER_SIZE];
 
-
-/* Prototypes */
+/* Public prototypes */
 void dbprint_INIT (USART_TypeDef* pointer, uint8_t location, bool vcom, bool interrupts);
 
 void dbAlert (void);
@@ -55,8 +52,8 @@ void dbprintlnInt (int32_t value);
 void dbprintInt_hex (int32_t value);
 void dbprintlnInt_hex (int32_t value);
 
-void dbprint_color (char *message, uint8_t color);
-void dbprintln_color (char *message, uint8_t color);
+void dbprint_color (char *message, dbprint_color_t color);
+void dbprintln_color (char *message, dbprint_color_t color);
 
 void dbinfo (char *message);
 void dbwarn (char *message);
@@ -74,11 +71,9 @@ char dbReadChar (void);
 uint8_t dbReadInt (void);
 void dbReadLine (char *buf);
 
-void uint32_to_charHex (char *buf, uint32_t value, bool spacing);
-void uint32_to_charDec (char *buf, uint32_t value);
-
-uint32_t charDec_to_uint32 (char *buf);
-uint32_t charHex_to_uint32 (char *buf);
+bool dbGetRX_status (void);
+void dbSetAndSend_TXbuffer (char *message);
+void dbGetAndClear_RXbuffer (char *buf);
 
 
 #endif /* _DBPRINT_H_ */
