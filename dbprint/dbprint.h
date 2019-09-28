@@ -20,7 +20,7 @@
 #define DBPRINT_BUFFER_SIZE 80
 
 
-/** Enum type for the color selection */
+/** Enum type for the color selection. */
 typedef enum dbprint_colors
 {
 	RED,

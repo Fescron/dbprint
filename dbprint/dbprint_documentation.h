@@ -1,14 +1,12 @@
 /***************************************************************************//**
- * @file documentation.h
+ * @file dbprint_documentation.h
  * @brief This file contains useful documentation.
  * @version 1.0
  * @author Brecht Van Eeckhoudt
  *
  * ******************************************************************************
  *
- * @mainpage Important documentation
- *
- *   @todo write info
+ * @mainpage
  *
  * ******************************************************************************
  *

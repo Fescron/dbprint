@@ -34,7 +34,7 @@
  *   @li v4.0: Added more documentation.
  *   @li v4.1: Added color reset before welcome message.
  *   @li v5.0: Made uint-char conversion methods static, moved color functionality to enum,
- *             changed interrupt functionality to use getters and setters.
+ *             started moving interrupt functionality to use getters and setters.
  *
  * ******************************************************************************
  *
@@ -138,7 +138,7 @@ static uint32_t charHex_to_uint32 (char *buf);
  *   Location for pin routing.
  *
  * @param[in] vcom
- *   @li `true` - Isolation switch enabled by setting PA9 high so the **Virtual COM port (CDC)** can be used.
+ *   @li `true` - Isolation switch enabled by setting `PA9` high so the **Virtual COM port (CDC)** can be used.
  *   @li `false` - Isolation switch disabled on the Happy Gecko board.
  *
  * @param[in] interrupts
@@ -365,7 +365,7 @@ void dbClear (void)
  * 
  * @note
  *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
- *   the input message (array) needs to end with NULL (`\0`)!
+ *   the input message (array) needs to end with NULL (`"\0"`)!
  *
  * @param[in] message
  *   The string to print to USARTx.
@@ -387,7 +387,7 @@ void dbprint (char *message)
  *
  * @note
  *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
- *   the input message (array) needs to end with NULL (`\0`)!
+ *   the input message (array) needs to end with NULL (`"\0"`)!
  *
  * @param[in] message
  *   The string to print to USARTx.
@@ -410,7 +410,7 @@ void dbprintln (char *message)
  *
  * @note
  *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
- *   the input message (array) needs to end with NULL (`\0`)!
+ *   the input message (array) needs to end with NULL (`"\0"`)!
  *
  * @param[in] message
  *   The string to print to USARTx.
@@ -469,7 +469,7 @@ void dbprint_color (char *message, dbprint_color_t color)
  *
  * @note
  *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
- *   the input message (array) needs to end with NULL (`\0`)!
+ *   the input message (array) needs to end with NULL (`"\0"`)!
  *
  * @param[in] message
  *   The string to print to USARTx.
@@ -491,11 +491,11 @@ void dbprintln_color (char *message, dbprint_color_t color)
 
 /**************************************************************************//**
  * @brief
- *   Print an info string (char array) to USARTx and go to the next line.
+ *   Print an *info* string (char array) to USARTx and go to the next line.
  *
  * @note
  *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
- *   the input message (array) needs to end with NULL (`\0`)!
+ *   the input message (array) needs to end with NULL (`"\0"`)!
  *
  * @param[in] message
  *   The string to print to USARTx.
@@ -509,11 +509,11 @@ void dbinfo (char *message)
 
 /**************************************************************************//**
  * @brief
- *   Print a warning string (char array) in yellow to USARTx and go to the next line.
+ *   Print a *warning* string (char array) in yellow to USARTx and go to the next line.
  *
  * @note
  *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
- *   the input message (array) needs to end with NULL (`\0`)!
+ *   the input message (array) needs to end with NULL (`"\0"`)!
  *
  * @param[in] message
  *   The string to print to USARTx.
@@ -527,11 +527,11 @@ void dbwarn (char *message)
 
 /**************************************************************************//**
  * @brief
- *   Print a critical error string (char array) in red to USARTx and go to the next line.
+ *   Print a *critical error* string (char array) in red to USARTx and go to the next line.
  *
  * @note
  *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
- *   the input message (array) needs to end with NULL (`\0`)!
+ *   the input message (array) needs to end with NULL (`"\0"`)!
  *
  * @param[in] message
  *   The string to print to USARTx.
@@ -545,12 +545,15 @@ void dbcrit (char *message)
 
 /**************************************************************************//**
  * @brief
- *   Print a value surrounded by two strings (char array) to USARTx
- *   with "INFO: " added in front in decimal notation and go to the next line.
+ *   Print an *info* value surrounded by two strings (char array) to USARTx.
+ *
+ * @details
+ *   "INFO: " gets added in front, the decimal notation is used and
+ *   the function advances to the next line.
  *
  * @note
  *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
- *   the input message (array) needs to end with NULL (`\0`)!
+ *   the input message (array) needs to end with NULL (`"\0"`)!
  *
  * @param[in] message1
  *   The first part of the string to print to USARTx.
@@ -572,13 +575,16 @@ void dbinfoInt (char *message1, int32_t value, char *message2)
 
 /**************************************************************************//**
  * @brief
- *   Print a value surrounded by two strings (char array) to USARTx
- *   with "WARN: " added in front in decimal notation and go to the next line.
- *   The value is in the color white, the rest is yellow.
+ *   Print a *warning* value surrounded by two strings (char array) to USARTx.
+ *
+ * @details
+ *   "WARN: " gets added in front, the decimal notation is used and
+ *   the function advances to the next line. The value is in the color white,
+ *   the rest is yellow.
  *
  * @note
  *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
- *   the input message (array) needs to end with NULL (`\0`)!
+ *   the input message (array) needs to end with NULL (`"\0"`)!
  *
  * @param[in] message1
  *   The first part of the string to print to USARTx.
@@ -600,13 +606,16 @@ void dbwarnInt (char *message1, int32_t value, char *message2)
 
 /**************************************************************************//**
  * @brief
- *   Print a value surrounded by two strings (char array) to USARTx
- *   with "CRIT: " added in front in decimal notation and go to the next line.
- *   The value is in the color white, the rest is red.
+ *   Print a *critical* value surrounded by two strings (char array) to USARTx.
+ *
+ * @details
+ *   "CRIT: " gets added in front, the decimal notation is used and
+ *   the function advances to the next line. The value is in the color white,
+ *   the rest is red.
  *
  * @note
  *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
- *   the input message (array) needs to end with NULL (`\0`)!
+ *   the input message (array) needs to end with NULL (`"\0"`)!
  *
  * @param[in] message1
  *   The first part of the string to print to USARTx.
@@ -628,12 +637,15 @@ void dbcritInt (char *message1, int32_t value, char *message2)
 
 /**************************************************************************//**
  * @brief
- *   Print a value surrounded by two strings (char array) to USARTx
- *   with "INFO: " added in front in hexadecimal notation and go to the next line.
+ *   Print an *info* value surrounded by two strings (char array) to USARTx.
+ *
+ * @details
+ *   "INFO: " gets added in front, the hexadecimal notation is used and
+ *   the function advances to the next line.
  *
  * @note
  *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
- *   the input message (array) needs to end with NULL (`\0`)!
+ *   the input message (array) needs to end with NULL (`"\0"`)!
  *
  * @param[in] message1
  *   The first part of the string to print to USARTx.
@@ -655,13 +667,16 @@ void dbinfoInt_hex (char *message1, int32_t value, char *message2)
 
 /**************************************************************************//**
  * @brief
- *   Print a value surrounded by two strings (char array) to USARTx
- *   with "WARN: " added in front in hexadecimal notation and go to the next line.
- *   The value is in the color white, the rest is yellow.
+ *   Print a *warning* value surrounded by two strings (char array) to USARTx.
+ *
+ * @details
+ *   "WARN: " gets added in front, the hexadecimal notation is used and
+ *   the function advances to the next line. The value is in the color white,
+ *   the rest is yellow.
  *
  * @note
  *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
- *   the input message (array) needs to end with NULL (`\0`)!
+ *   the input message (array) needs to end with NULL (`"\0"`)!
  *
  * @param[in] message1
  *   The first part of the string to print to USARTx.
@@ -683,13 +698,16 @@ void dbwarnInt_hex (char *message1, int32_t value, char *message2)
 
 /**************************************************************************//**
  * @brief
- *   Print a value surrounded by two strings (char array) to USARTx
- *   with "CRIT: " added in front in hexadecimal notation and go to the next line.
- *   The value is in the color white, the rest is red.
+ *   Print a *critical* value surrounded by two strings (char array) to USARTx.
+ *
+ * @details
+ *   "CRIT: " gets added in front, the hexadecimal notation is used and
+ *   the function advances to the next line. The value is in the color white,
+ *   the rest is red.
  *
  * @note
  *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
- *   the input message (array) needs to end with NULL (`\0`)!
+ *   the input message (array) needs to end with NULL (`"\0"`)!
  *
  * @param[in] message1
  *   The first part of the string to print to USARTx.
@@ -806,12 +824,6 @@ void dbprintlnInt_hex (int32_t value)
  * @brief
  *   Read a character from USARTx.
  *
- * @note
- *   To read a `uint8_t` value you can simply cast the char.@n
- *   Specific methods exist to read `uint16_t` and `uint32_t` values:
- *     - `uint16_t USART_RxDouble(USART_TypeDef *usart);`
- *     - `uint32_t USART_RxDoubleExt(USART_TypeDef *usart);`
- *
  * @return
  *   The character read from USARTx.
  *****************************************************************************/
@@ -824,6 +836,11 @@ char dbReadChar (void)
 /**************************************************************************//**
  * @brief
  *   Read a decimal character from USARTx and convert it to a `uint8_t` value.
+ *
+ * @note
+ *   Specific methods exist to read `uint16_t` and `uint32_t` values:
+ *     - `uint16_t USART_RxDouble(USART_TypeDef *usart);`
+ *     - `uint32_t USART_RxDoubleExt(USART_TypeDef *usart);`
  *
  * @return
  *   The converted `uint8_t` value.
@@ -844,8 +861,8 @@ uint8_t dbReadInt (void)
  *   Read a string (char array) from USARTx.
  *
  * @note
- *   The reading stops when a `CR` character is received or the maximum
- *   length (`DBPRINT_BUFFER_SIZE`) is reached.
+ *   The reading stops when a `"CR"` (*Carriage Return*, *ENTER*) character
+ *   is received or the maximum length (`DBPRINT_BUFFER_SIZE`) is reached.
  *
  * @param[in] buf
  *   The buffer to put the resulting string in.@n
@@ -877,7 +894,7 @@ void dbReadLine (char *buf)
  * @brief
  *   Get the value of the RX buffer.
  *
- * @note
+ * @attention
  *   Interrupt functionality has to be enabled on initialization for this
  *   function to work correctly.
  *
@@ -896,10 +913,10 @@ bool dbGetRX_status (void)
  *   Set the value of the TX buffer and transmit it using interrupts.
  *
  * @note
- *   If the input is not a string (ex.: "`"Hello world!"`") but a char array,
- *   the input message (array) needs to end with NULL (`\0`)!
+ *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
+ *   the input message (array) needs to end with NULL (`"\0"`)!
  *
- * @note
+ * @attention
  *   Interrupt functionality has to be enabled on initialization for this
  *   function to work correctly.
  *
@@ -916,7 +933,7 @@ void dbSetAndSend_TXbuffer (char *message)
  * @brief
  *   Get the value of the RX buffer.
  *
- * @note
+ * @attention
  *   Interrupt functionality has to be enabled on initialization for this
  *   function to work correctly.
  *
@@ -1103,8 +1120,8 @@ static void uint32_to_charDec (char *buf, uint32_t value)
  *   Convert a string (char array) in decimal notation to a `uint32_t` value.
  *
  * @note
- *   If the input is not a string (ex.: `00BA0FA1`) but a char array,
- *   the input buffer (array) needs to end with NULL (`\0`)!
+ *   If the input is not a string (ex.: `"00BA0FA1"`) but a char array,
+ *   the input buffer (array) needs to end with NULL (`"\0"`)!
  *
  * @note
  *   This is a static method because it's only internally used in this file
@@ -1150,8 +1167,8 @@ static uint32_t charDec_to_uint32 (char *buf)
  *   Convert a string (char array) in hexadecimal notation to a `uint32_t` value.
  *
  * @note
- *   If the input is not a string (ex.: `00120561`) but a char array,
- *   the input buffer (array) needs to end with NULL (`\0`)!@n
+ *   If the input is not a string (ex.: `"00120561"`) but a char array,
+ *   the input buffer (array) needs to end with NULL (`"\0"`)!@n
  *   The input string can't have the prefix `0x`.
  *
  * @note
