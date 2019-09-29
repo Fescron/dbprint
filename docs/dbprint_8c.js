@@ -16,8 +16,8 @@ var dbprint_8c =
     [ "dbcrit", "dbprint_8c.html#afbbbe6e04352a6b56d1d8a053ec4f941", null ],
     [ "dbcritInt", "dbprint_8c.html#ac127caf50634ea902e2ae98d038feec8", null ],
     [ "dbcritInt_hex", "dbprint_8c.html#a68c0b5602768fe1b3b115818d9d19517", null ],
-    [ "dbGetAndClear_RXbuffer", "dbprint_8c.html#ac23cebb11bf9b33b864f83a9c675463e", null ],
-    [ "dbGetRX_status", "dbprint_8c.html#a2ca656687fc4c6a7af48ed403d922964", null ],
+    [ "dbGet_RXbuffer", "dbprint_8c.html#a8c47d4f12d612d50a48f88079b9788b7", null ],
+    [ "dbGet_RXstatus", "dbprint_8c.html#a2438c70ed863bee3348de2d4fc525031", null ],
     [ "dbinfo", "dbprint_8c.html#acb5d4e1082c625ad85d835d4e053d4d8", null ],
     [ "dbinfoInt", "dbprint_8c.html#a0511ddad2e00a8187d5449b15de7eb4f", null ],
     [ "dbinfoInt_hex", "dbprint_8c.html#af175e2f9858ee73556d78256d72e6823", null ],
@@ -33,7 +33,7 @@ var dbprint_8c =
     [ "dbReadChar", "dbprint_8c.html#a91119ee9f494f8619f186fefe0e43d2b", null ],
     [ "dbReadInt", "dbprint_8c.html#afb3acf31bedd0a65df5cd2fe634e6a21", null ],
     [ "dbReadLine", "dbprint_8c.html#a82b12a746031f077dd36e7b3777631a4", null ],
-    [ "dbSetAndSend_TXbuffer", "dbprint_8c.html#a4cc3c1b91ad80b4e5330c5ff45957761", null ],
+    [ "dbSet_TXbuffer", "dbprint_8c.html#ae3e22a0e7dcfae987a0dfd576d988474", null ],
     [ "dbwarn", "dbprint_8c.html#a73de59bf0a689a086681070783a82df3", null ],
     [ "dbwarnInt", "dbprint_8c.html#ada27783fef89d9c9af4976baab87c477", null ],
     [ "dbwarnInt_hex", "dbprint_8c.html#ab404cefa28fc63ac33567c5de1e0c5e1", null ],
@@ -43,8 +43,8 @@ var dbprint_8c =
     [ "USART0_TX_IRQHandler", "dbprint_8c.html#aa1ad8819e3b118aa46e7c04efc32593b", null ],
     [ "USART1_RX_IRQHandler", "dbprint_8c.html#aa6a5099bafcea7a957c8a7aff925a5c2", null ],
     [ "USART1_TX_IRQHandler", "dbprint_8c.html#af7afa223a57cccc216b627b070ad9443", null ],
+    [ "dataReceived", "dbprint_8c.html#a9caaf5e68386ab1a12ef35bee230b1f2", null ],
     [ "dbpointer", "dbprint_8c.html#a17cb68175234053c0b4f7356b6b20e18", null ],
-    [ "dbprint_rx_buffer", "dbprint_8c.html#abf1c5b53e0d8331a768d4f05a557fa65", null ],
-    [ "dbprint_rxdata", "dbprint_8c.html#affce42af7fa97600ac54c99354cdc321", null ],
-    [ "dbprint_tx_buffer", "dbprint_8c.html#afb11a4e8324b0757e950c342c16b870f", null ]
+    [ "rx_buffer", "dbprint_8c.html#a9d6fb225dc9d453e3200d22c361bf2cd", null ],
+    [ "tx_buffer", "dbprint_8c.html#a0ade938809d4336c16aa02941cfbb20f", null ]
 ];

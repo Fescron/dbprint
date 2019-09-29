@@ -1,12 +1,17 @@
 /***************************************************************************//**
  * @file dbprint_documentation.h
  * @brief This file contains useful documentation.
- * @version 1.0
+ * @version 1.1
  * @author Brecht Van Eeckhoudt
  *
  * ******************************************************************************
  *
- * @mainpage
+ * @mainpage DeBugPrint
+ *
+ *   DeBugPrint is a homebrew minimal low-level println/printf replacement.
+ *   It can be used to to print text/values to uart without a lot of external
+ *   libraries. The end goal was to use no external libraries (with methods
+ *   like `itoa`) apart from the ones specific to the microcontroller.
  *
  * ******************************************************************************
  *
@@ -19,20 +24,51 @@
  *
  * ******************************************************************************
  *
- * @section SETTINGS Settings using definition in `debug_dbprint.h`
+ * @section ENABLE Enable/disable dbprint using definition in `debug_dbprint.h`
  *
  *   In the file `debug_dbprint.h` **dbprint UART functionality can be enabled/disabled**
  *   with the definition `#define DEBUG_DBPRINT`. If it's value is `0`, all dbprint
- *   statements are disabled throughout the source code because they're all surrounded
- *   with `#if DEBUG_DBPRINT == 1 ... #endif` checks.
+ *   functionality is disabled.
+ *
+ *   @note
+ *     This means that the **only header file to include in your projects** for
+ *     dbprint to work is@n
+ *     `#include debug_dbprint.h`
+ *
+ *   @note
+ *     If you also want to use this definition to enable/disable dbprint statements
+ *     in your code, please use the following convention:@n
+ *     `#if DEBUG_DBPRINT == 1 // DEBUG_DBPRINT `@n
+ *     `<your source code dbprint statements go here>`@n
+ *     `#endif // DEBUG_DBPRINT`
  *
  * ******************************************************************************
  *
- * @section DEBUG Debugging using VCOM
+ * @section DBPRINT More info about dbprint and VCOM
  *
- *   The Energy profiler in Simplicity Studio seems to use VCOM (on-board UART
- *   to USB converter) somehow, change to using an external UART adapter if both
- *   the energy profiler and UART debugging are necessary at the same time!
+ *   VCOM is an on-board (SLSTK3400A) UART to USB converter alongside the Segger
+ *   J-Link debugger, connected with microcontroller pins `PA0` (RX) and `PF2` (TX).
+ *   This converter can then be used with Putty or another serial port program.
+ *
+ *   @note
+ *     When you want to debug using VCOM with interrupt functionality disabled, you
+ *     can use the following initialization settings:@n
+ *     `dbprint_INIT(USART1, 4, true, false);`
+ *
+ *   @note
+ *     When using `dbprint` functionality, the following settings are used:
+ *       - Baudrate = 115200
+ *       - 8 databits
+ *       - 1 stopbit
+ *       - No parity
+ *
+ * ******************************************************************************
+ *
+ * @section ENERGY Energy profiler and dbprint
+ *
+ *   The Energy profiler in Simplicity Studio seems to use VCOM  somehow, change
+ *   to using an external UART adapter if both the energy profiler and UART
+ *   debugging are necessary at the same time!
  *
  *   If the energy profiler was used and the code functionality was switched,
  *   physically re-plug the board to make sure VCOM UART starts working again!
@@ -53,19 +89,6 @@
  *     - USART1 #4 (USART0 can't be used)
  *     - RX - `PA0`
  *     - TX - `PF2`
- *
- * ******************************************************************************
- *
- * @section DBPRINT More info about `dbprint`
- *
- *   When using `dbprint` functionality, the following settings are used:
- *     - Baudrate = 115200
- *     - 8 databits
- *     - 1 stopbit
- *     - No parity
- *
- *   When you want to debug using VCOM with interrupt functionality disabled, you
- *   can use the following initialization settings: `dbprint_INIT(USART1, 4, true, false);`
  *
  * ******************************************************************************
  *

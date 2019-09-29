@@ -66,7 +66,7 @@ $(document).ready(function(){initNavTree('debug__dbprint_8h.html','');});
 </div><!--header-->
 <div class="contents">
 
-<p>Enable or disable printing to UART.  
+<p>Enable or disable printing to UART with dbprint.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="dbprint_8h_source.html">dbprint.h</a>&quot;</code><br />
 </div>
@@ -78,9 +78,18 @@ Macros</h2></td></tr>
 <tr class="separator:a4ef257e0f94ec070ab7a49a0431dfbec"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Enable or disable printing to UART. </p>
-<p>This header file should be called in every other file where there are UART debugging statements. Depending on the value of <code>DEBUG_DBPRINT</code>, UART statements are enabled or disabled. </p><dl class="section version"><dt>Version</dt><dd>1.0 </dd></dl>
-<dl class="section author"><dt>Author</dt><dd>Brecht Van Eeckhoudt </dd></dl>
+<div class="textblock"><p>Enable or disable printing to UART with dbprint. </p>
+<p>This header file should be called in every other file where there are UART dbprint debugging statements. Depending on the value of <code>DEBUG_DBPRINT</code>, UART statements are enabled or disabled. </p><dl class="section version"><dt>Version</dt><dd>1.1 </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Brecht Van Eeckhoudt</dd></dl>
+<hr/>
+<h1><a class="anchor" id="License"></a>
+License</h1>
+<p><b>Copyright (C) 2019 - Brecht Van Eeckhoudt</b></p>
+<p>This program is free software: you can redistribute it and/or modify it under the terms of the <b>GNU General Public License</b> as published by the Free Software Foundation, either <b>version 3</b> of the License, or (at your option) any later version.</p>
+<p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</p>
+<p><em>A copy of the GNU General Public License can be found in the <code>LICENSE</code> file along with this source code.</em></p>
+<p><br />
+ Some methods also use code obtained from examples from <a href="https://github.com/SiliconLabs/peripheral_examples">Silicon Labs' GitHub</a>. These sections are licensed under the Silabs License Agreement. See the file "Silabs_License_Agreement.txt" for details. Before using this software for any purpose, you must agree to the terms of that agreement. </p>
 
 <p class="definition">Definition in file <a class="el" href="debug__dbprint_8h_source.html">debug_dbprint.h</a>.</p>
 </div><h2 class="groupheader">Macro Definition Documentation</h2>
@@ -100,7 +109,7 @@ Macros</h2></td></tr>
 <li><code>0</code> - Remove all UART debugging statements from the uploaded code. </li>
 </ul>
 
-<p class="definition">Definition at line <a class="el" href="debug__dbprint_8h_source.html#l00021">21</a> of file <a class="el" href="debug__dbprint_8h_source.html">debug_dbprint.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="debug__dbprint_8h_source.html#l00048">48</a> of file <a class="el" href="debug__dbprint_8h_source.html">debug_dbprint.h</a>.</p>
 
 </div>
 </div>
@@ -110,7 +119,7 @@ Macros</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_ca5fbc3f6f6667caf4918c667fbe5e47.html">dbprint</a></li><li class="navelem"><a class="el" href="debug__dbprint_8h.html">debug_dbprint.h</a></li>
-    <li class="footer">Generated on Sat Sep 28 2019 21:42:47 for DeBugPrint (dbprint) by
+    <li class="footer">Generated on Sun Sep 29 2019 13:19:28 for DeBugPrint (dbprint) by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>
   </ul>

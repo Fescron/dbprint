@@ -1,17 +1,19 @@
 var NAVTREE =
 [
   [ "DeBugPrint (dbprint)", "index.html", [
-    [ "Doxygen", "index.html#Doxygen", null ],
-    [ "Settings using definition in `debug_dbprint.h`", "index.html#SETTINGS", null ],
-    [ "Debugging using VCOM", "index.html#DEBUG", null ],
-    [ "Alternate UART Functionality Pinout", "index.html#UART", null ],
-    [ "More info about `dbprint`", "index.html#DBPRINT", null ],
-    [ "Keywords", "index.html#Keywords", [
-      [ "Volatile", "index.html#Volatile", null ],
-      [ "Extern", "index.html#Extern", null ],
-      [ "Static", "index.html#Static", null ]
+    [ "DeBugPrint", "index.html", [
+      [ "Doxygen", "index.html#Doxygen", null ],
+      [ "Enable/disable dbprint using definition in `debug_dbprint.h`", "index.html#ENABLE", null ],
+      [ "More info about dbprint and VCOM", "index.html#DBPRINT", null ],
+      [ "Energy profiler and dbprint", "index.html#ENERGY", null ],
+      [ "Alternate UART Functionality Pinout", "index.html#UART", null ],
+      [ "Keywords", "index.html#Keywords", [
+        [ "Volatile", "index.html#Volatile", null ],
+        [ "Extern", "index.html#Extern", null ],
+        [ "Static", "index.html#Static", null ]
+      ] ],
+      [ "Bits, bytes, nibbles and unsigned/signed integer value ranges", "index.html#DATA", null ]
     ] ],
-    [ "Bits, bytes, nibbles and unsigned/signed integer value ranges", "index.html#DATA", null ],
     [ "Todo List", "todo.html", null ],
     [ "Files", null, [
       [ "File List", "files.html", "files" ],
