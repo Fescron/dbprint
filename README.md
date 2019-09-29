@@ -1,22 +1,21 @@
 # dbprint
 
+![License](https://img.shields.io/badge/license-GNU%20GPL%20v3.0-blue.svg)
+![GitHub last commit](https://img.shields.io/github/last-commit/Fescron/dbprint.svg)
 ![GitHub Release Date](https://img.shields.io/github/release-date/Fescron/dbprint.svg)
 ![GitHub release](https://img.shields.io/github/release/Fescron/dbprint.svg)
-![GitHub last commit](https://img.shields.io/github/last-commit/Fescron/dbprint.svg)
 ![Target device](https://img.shields.io/badge/target%20device-EFM32HG322F64G-yellow.svg)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/Fescron/dbprint.svg)
 
-
-
 **DeBugPrint** is a homebrew minimal low-level `println/printf` replacement. It can be used to to print text/values to `uart`without a lot of external libraries. The end goal was to use no exernal libraries (with methods like ```itoa```) apart from the ones specific to the microcontroller.
 
-**DeBugPrint** is originally designed for use on the `Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48)` and was developed on `Simplicity Studio v4` on `Ubuntu 18.04 LTS`.
+**DeBugPrint** was originally designed for use on the `Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48)` and was developed on `Simplicity Studio v4` on `Ubuntu 18.04 LTS`.
 
 <br/>
 
 **NOTE:** There are a lot of useful simple code-examples at https://github.com/SiliconLabs/peripheral_examples
 
-------
+<br/>
 
 ## Table of contents
 
@@ -34,7 +33,7 @@
 - [4 - Code examples for when dbprint is in "interrupt mode"](#4---code-examples-for-when-dbprint-is-in-interrupt-mode)
    - [4.1 - Echo text back (can be put in "while(1)" in "main.c")](#41---echo-text-back-can-be-put-in-while1-in-mainc)
 
-------
+<br/>
 
 ## 1 - Installation instructions (Simplicity Studio v4)
 
@@ -86,7 +85,7 @@ Perform a *clean and build* action to fix errors that would occur when the proje
 3. Check *"Start a build immediately"* while *"Build only the selected projects"* is selected.
 4. Press OK.
 
-------
+<br/>
 
 ## 2 - Methods
 
@@ -237,7 +236,7 @@ dbcritInt("Critical error = ", value, " [unit of value]");
 dbcritInt_hex("Critical error = ", value, " [unit of value]");
 ```
 
-------
+<br/>
 
 ## 3 - Alternate locations of pins
 
@@ -256,7 +255,7 @@ If you use **dbprint** you don't really need to worry about this but you need to
 | US1_RX   | PC1  |      | PD6  | PD6  | PA0  | PC2  |      |
 | US1_TX   | PC0  |      | PD7  | PD7  | PF2  | PC1  |      |
 
-------
+<br/>
 
 ## 4 - Code examples for when dbprint is in "interrupt mode"
 
