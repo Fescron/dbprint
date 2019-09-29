@@ -1,8 +1,35 @@
 /***************************************************************************//**
  * @file dbprint.h
  * @brief Homebrew println/printf replacement "DeBugPRINT".
- * @version 5.0
+ * @version 5.1
  * @author Brecht Van Eeckhoudt
+ *
+ * ******************************************************************************
+ *
+ * @section License
+ *
+ *   **Copyright (C) 2019 - Brecht Van Eeckhoudt**
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the **GNU General Public License** as published by
+ *   the Free Software Foundation, either **version 3** of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   *A copy of the GNU General Public License can be found in the `LICENSE`
+ *   file along with this source code.*
+ *
+ *   @n
+ *
+ *   Some methods also use code obtained from examples from [Silicon Labs' GitHub](https://github.com/SiliconLabs/peripheral_examples).
+ *   These sections are licensed under the Silabs License Agreement. See the file
+ *   "Silabs_License_Agreement.txt" for details. Before using this software for
+ *   any purpose, you must agree to the terms of that agreement.
+ *
  ******************************************************************************/
 
 
@@ -12,8 +39,9 @@
 
 
 /* Includes necessary for this header file */
-#include <stdint.h>  /* (u)intXX_t */
-#include <stdbool.h> /* "bool", "true", "false" */
+#include <stdint.h>   /* (u)intXX_t */
+#include <stdbool.h>  /* "bool", "true", "false" */
+#include "em_usart.h" /* Universal synchr./asynchr. receiver/transmitter (USART/UART) Peripheral API */
 
 
 /** Public definition to configure the buffer size. */
@@ -71,9 +99,9 @@ char dbReadChar (void);
 uint8_t dbReadInt (void);
 void dbReadLine (char *buf);
 
-bool dbGetRX_status (void);
-void dbSetAndSend_TXbuffer (char *message);
-void dbGetAndClear_RXbuffer (char *buf);
+bool dbGet_RXstatus (void);
+void dbSet_TXbuffer (char *message);
+void dbGet_RXbuffer (char *buf);
 
 
 #endif /* _DBPRINT_H_ */

@@ -2,7 +2,7 @@
  * @file dbprint.c
  * @brief Homebrew println/printf replacement "DeBugPRINT".
  * @details Originally designed for use on the Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48).
- * @version 5.0
+ * @version 5.1
  * @author Brecht Van Eeckhoudt
  *
  * ******************************************************************************
@@ -35,16 +35,19 @@
  *   @li v4.1: Added color reset before welcome message.
  *   @li v5.0: Made uint-char conversion methods static, moved color functionality to enum,
  *             started moving interrupt functionality to use getters and setters.
+ *   @li v5.1: Fixed interrupt functionality with getters and setters.
  *
  * ******************************************************************************
  *
  * @todo
- *   - Interrupt calls: call from one to the other to reduce code lines.
- *   - Separate back-end <-> MCU specific code?
  *   - Use getters and setters instead of "extern" for the interrupt buffers?
  *       - Not safe if multiple ISR's are using the same "extern"!
  *       - Use "atomic" stuff when an action has to be performed before other interrupts can be called?
  *       - CORE_ENTER_ATOMIC() ? ~ disable certain interrupts
+ *
+ * @todo
+ *   **Future improvements:**@n
+ *     - Separate back-end <-> MCU specific code
  *
  * ******************************************************************************
  *
@@ -80,18 +83,16 @@
  ******************************************************************************/
 
 
+#include "debug_dbprint.h" /* Enable or disable printing to UART for debugging */
+
+#if DEBUG_DBPRINT == 1 /* DEBUG_DBPRINT */
+
+
 #include <stdint.h>        /* (u)intXX_t */
 #include <stdbool.h>       /* "bool", "true", "false" */
 #include "em_cmu.h"        /* Clock Management Unit */
 #include "em_gpio.h"       /* General Purpose IO (GPIO) peripheral API */
 #include "em_usart.h"      /* Universal synchr./asynchr. receiver/transmitter (USART/UART) Peripheral API */
-
-#include "debug_dbprint.h" /* Enable or disable printing to UART for debugging */
-
-
-#if DEBUG_DBPRINT == 1 /* DEBUG_DBPRINT */
-
-#include "dbprint.h"
 
 
 /* Local definitions */
@@ -115,9 +116,9 @@ USART_TypeDef* dbpointer;
 
 /* Local variables
  *   `volatile` because they're modified by an interrupt service routine. */
-static volatile bool dbprint_rxdata = false; /* true if there is a line of data received */
-static volatile char dbprint_rx_buffer[DBPRINT_BUFFER_SIZE];
-static volatile char dbprint_tx_buffer[DBPRINT_BUFFER_SIZE];
+static volatile bool dataReceived = false; /* true if there is a line of data received */
+static volatile char rx_buffer[DBPRINT_BUFFER_SIZE];
+static volatile char tx_buffer[DBPRINT_BUFFER_SIZE];
 
 
 /* Local prototypes */
@@ -861,7 +862,7 @@ uint8_t dbReadInt (void)
  *   Read a string (char array) from USARTx.
  *
  * @note
- *   The reading stops when a `"CR"` (*Carriage Return*, *ENTER*) character
+ *   The reading stops when a `"CR"` (Carriage Return, ENTER) character
  *   is received or the maximum length (`DBPRINT_BUFFER_SIZE`) is reached.
  *
  * @param[in] buf
@@ -892,7 +893,11 @@ void dbReadLine (char *buf)
 
 /**************************************************************************//**
  * @brief
- *   Get the value of the RX buffer.
+ *   Check if data was received using interrupts in the RX buffer.
+ *
+ * @note
+ *   The index of the RX buffer gets reset in the RX handler when a CR character
+ *   is received or the buffer is filled.
  *
  * @attention
  *   Interrupt functionality has to be enabled on initialization for this
@@ -902,19 +907,23 @@ void dbReadLine (char *buf)
  *   @li `true` - Data is received in the RX buffer.
  *   @li `false` - No data is received.
  *****************************************************************************/
-bool dbGetRX_status (void)
+bool dbGet_RXstatus (void)
 {
-	return (dbprint_rxdata);
+	return (dataReceived);
 }
 
 
 /**************************************************************************//**
  * @brief
- *   Set the value of the TX buffer and transmit it using interrupts.
+ *   Set the value of the TX buffer and start transmitting it using interrupts.
  *
  * @note
  *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
  *   the input message (array) needs to end with NULL (`"\0"`)!
+ *
+ * @note
+ *   The index of the RX buffer gets reset in the TX handler when all the
+ *   characters in the buffer are send.
  *
  * @attention
  *   Interrupt functionality has to be enabled on initialization for this
@@ -923,15 +932,30 @@ bool dbGetRX_status (void)
  * @param[in] message
  *   The string to put in the TX buffer.
  *****************************************************************************/
-void dbSetAndSend_TXbuffer (char *message)
+void dbSet_TXbuffer (char *message)
 {
-	// TODO
+	// TODO: Do we need to disable some interrupts?
+
+	uint32_t i;
+
+	/* Copy data to the TX buffer */
+	for (i = 0; message[i] != 0 && i < DBPRINT_BUFFER_SIZE-1; i++)
+	{
+		tx_buffer[i] = message[i];
+	}
+
+	/* Add NULL termination character */
+	tx_buffer[i++] = '\0';
 }
 
 
 /**************************************************************************//**
  * @brief
- *   Get the value of the RX buffer.
+ *   Get the value of the RX buffer and clear the `dataReceived` flag.
+ *
+ * @note
+ *   The index of the RX buffer gets reset in the RX handler when a CR character
+ *   is received or the buffer is filled.
  *
  * @attention
  *   Interrupt functionality has to be enabled on initialization for this
@@ -942,51 +966,29 @@ void dbSetAndSend_TXbuffer (char *message)
  *   **This needs to have a length of `DBPRINT_BUFFER_SIZE` for the function
  *   to work properly: `char buf[DBPRINT_BUFFER_SIZE];`!**
  *****************************************************************************/
-void dbGetAndClear_RXbuffer (char *buf)
+void dbGet_RXbuffer (char *buf)
 {
-	// TODO: needs fixing (buffer not cleared, some TX functionality in here needs to be removed)
+	// TODO: Do we need to disable some interrupts?
 
-	if (dbprint_rxdata)
+	if (dataReceived)
 	{
 		uint32_t i;
 
-	   /* RX Data Valid Interrupt Enable
-		*   Set when data is available in the receive buffer. Cleared when the receive buffer is empty.
-		*
-		* TX Complete Interrupt Enable
-		*   Set when a transmission has completed and no more data is available in the transmit buffer.
-		*   Cleared when a new transmission starts.
-		*/
+		/* Copy data from the RX buffer to the given buffer */
+		for (i = 0; rx_buffer[i] != 0 && i < DBPRINT_BUFFER_SIZE-1; i++)
+		{
+			buf[i] = rx_buffer[i];
+		}
 
-	   /* Disable "RX Data Valid Interrupt Enable" and "TX Complete Interrupt Enable" interrupts */
-	   USART_IntDisable(dbpointer, USART_IEN_RXDATAV);
-	   USART_IntDisable(dbpointer, USART_IEN_TXC);
+		/* Add NULL termination character */
+		buf[i++] = '\0';
 
-	   /* Copy data from the RX buffer to the given buffer */
-	   for (i = 0; dbprint_rx_buffer[i] != 0 && i < DBPRINT_BUFFER_SIZE-3; i++)
-	   {
-		   buf[i] = dbprint_rx_buffer[i];
-	   }
-
-	   /* Add "new line" characters */
-	   buf[i++] = '\r';
-	   buf[i++] = '\n';
-	   buf[i] = '\0';
-
-	   /* Reset "notification" variable */
-	   dbprint_rxdata = false;
-
-	   /* Enable "RX Data Valid Interrupt" and "TX Complete Interrupt" interrupts */
-	   USART_IntEnable(dbpointer, USART_IEN_RXDATAV);
-	   USART_IntEnable(dbpointer, USART_IEN_TXC);
-
-	   /* Set TX Complete Interrupt Flag (transmission has completed and no more data
-		* is available in the transmit buffer) */
-	   USART_IntSet(dbpointer, USART_IFS_TXC);
+		/* Reset "notification" variable */
+		dataReceived = false;
 	}
 	else
 	{
-		dbcrit("No data in RX buffer!");
+		dbcrit("No data received!");
 	}
 }
 
@@ -1218,7 +1220,11 @@ static uint32_t charHex_to_uint32 (char *buf)
 
 /**************************************************************************//**
  * @brief
- *   USARTx RX interrupt service routine.
+ *   USART0 RX interrupt service routine.
+ *
+ * @details
+ *   The index gets reset to zero when a special character (CR) is received or
+ *   the buffer is filled.
  *
  * @note
  *   The *weak* definition for this method is located in `system_efm32hg.h`.
@@ -1233,21 +1239,21 @@ void USART0_RX_IRQHandler(void)
 	USART_IntClear(dbpointer, flags);
 
 	/* Store incoming data into dbprint_rx_buffer */
-	dbprint_rx_buffer[i++] = USART_Rx(dbpointer);
+	rx_buffer[i++] = USART_Rx(dbpointer);
 
 	/* Set dbprint_rxdata when a special character is received (~ full line received) */
-	if ( (dbprint_rx_buffer[i - 1] == '\r') || (dbprint_rx_buffer[i - 1] == '\f') )
+	if ( (rx_buffer[i - 1] == '\r') || (rx_buffer[i - 1] == '\f') )
 	{
-		dbprint_rxdata = true;
-		dbprint_rx_buffer[i - 1] = '\0'; /* Overwrite CR or LF character */
+		dataReceived = true;
+		rx_buffer[i - 1] = '\0'; /* Overwrite CR or LF character */
 		i = 0;
 	}
 
 	/* Set dbprint_rxdata when the buffer is full */
 	if (i >= (DBPRINT_BUFFER_SIZE - 2))
 	{
-		dbprint_rxdata = true;
-		dbprint_rx_buffer[i] = '\0'; /* Do not overwrite last character */
+		dataReceived = true;
+		rx_buffer[i] = '\0'; /* Do not overwrite last character */
 		i = 0;
 	}
 }
@@ -1255,7 +1261,10 @@ void USART0_RX_IRQHandler(void)
 
 /**************************************************************************//**
  * @brief
- *   USARTx TX interrupt service routine.
+ *   USART0 TX interrupt service routine.
+ *
+ * @details
+ *   The index gets reset to zero when all the characters in the buffer are send.
  *
  * @note
  *   The *weak* definition for this method is located in `system_efm32hg.h`.
@@ -1274,10 +1283,10 @@ void USART0_TX_IRQHandler(void)
 	{
 		/* Index is smaller than the maximum buffer size and
 		 * the current item to print is not "NULL" (\0) */
-		if ( (i < DBPRINT_BUFFER_SIZE) && (dbprint_tx_buffer[i] != '\0') )
+		if ( (i < DBPRINT_BUFFER_SIZE) && (tx_buffer[i] != '\0') )
 		{
 			/* Transmit byte at current index and increment index */
-			USART_Tx(dbpointer, dbprint_tx_buffer[i++]);
+			USART_Tx(dbpointer, tx_buffer[i++]);
 		}
 		else
 		{
@@ -1289,72 +1298,29 @@ void USART0_TX_IRQHandler(void)
 
 /**************************************************************************//**
  * @brief
- *   USARTx RX interrupt service routine.
+ *   USART1 RX interrupt service routine.
  *
  * @note
  *   The *weak* definition for this method is located in `system_efm32hg.h`.
  *****************************************************************************/
 void USART1_RX_IRQHandler(void)
 {
-	/* "static" so it keeps its value between invocations */
-	static uint32_t i = 0;
-
-	/* Get and clear the pending USART interrupt flags */
-	uint32_t flags = USART_IntGet(dbpointer);
-	USART_IntClear(dbpointer, flags);
-
-	/* Store incoming data into dbprint_rx_buffer */
-	dbprint_rx_buffer[i++] = USART_Rx(dbpointer);
-
-	/* Set dbprint_rxdata when a special character is received (~ full line received) */
-	if ( (dbprint_rx_buffer[i - 1] == '\r') || (dbprint_rx_buffer[i - 1] == '\f') )
-	{
-		dbprint_rxdata = true;
-		dbprint_rx_buffer[i - 1] = '\0'; /* Overwrite CR or LF character */
-		i = 0;
-	}
-
-	/* Set dbprint_rxdata when the buffer is full */
-	if (i >= (DBPRINT_BUFFER_SIZE - 2))
-	{
-		dbprint_rxdata = true;
-		dbprint_rx_buffer[i] = '\0'; /* Do not overwrite last character */
-		i = 0;
-	}
+	/* Call other handler */
+	USART0_RX_IRQHandler();
 }
 
 
 /**************************************************************************//**
  * @brief
- *   USARTx TX interrupt service routine.
+ *   USART1 TX interrupt service routine.
  *
  * @note
  *   The *weak* definition for this method is located in `system_efm32hg.h`.
  *****************************************************************************/
 void USART1_TX_IRQHandler(void)
 {
-	/* "static" so it keeps its value between invocations */
-	static uint32_t i = 0;
-
-	/* Get and clear the pending USART interrupt flags */
-	uint32_t flags = USART_IntGet(dbpointer);
-	USART_IntClear(dbpointer, flags);
-
-	/* Mask flags AND "TX Complete Interrupt Flag" */
-	if (flags & USART_IF_TXC)
-	{
-		/* Index is smaller than the maximum buffer size and
-		 * the current item to print is not "NULL" (\0) */
-		if ( (i < DBPRINT_BUFFER_SIZE) && (dbprint_tx_buffer[i] != '\0') )
-		{
-			/* Transmit byte at current index and increment index */
-			USART_Tx(dbpointer, dbprint_tx_buffer[i++]);
-		}
-		else
-		{
-			i = 0; /* No more data to send */
-		}
-	}
+	/* Call other handler */
+	USART0_TX_IRQHandler();
 }
 
 #endif /* DEBUG_DBPRINT */
