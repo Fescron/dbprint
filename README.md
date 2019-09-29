@@ -9,7 +9,7 @@
 
 **DeBugPrint** is a homebrew minimal low-level `println/printf` replacement. It can be used to to print text/values to `uart`without a lot of external libraries. The end goal was to use no exernal libraries (with methods like ```itoa```) apart from the ones specific to the microcontroller.
 
-**DeBugPrint** was originally designed for use on the `Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48)` and was developed on `Simplicity Studio v4` on `Ubuntu 18.04 LTS`.
+**DeBugPrint** was originally designed for use on the `Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48)` (SLSTK3400A) and was developed on `Simplicity Studio v4` on `Ubuntu 18.04 LTS`.
 
 <br/>
 
@@ -17,6 +17,7 @@
 
 <br/>
 
+<!--
 ## Table of contents
 
 - [1 - Installation instructions (Simplicity Studio v4)](#1---installation-instructions-simplicity-studio-v4)
@@ -32,9 +33,11 @@
 - [3 - Alternate locations of pins](#3---alternate-locations-of-pins)
 - [4 - Code examples for when dbprint is in "interrupt mode"](#4---code-examples-for-when-dbprint-is-in-interrupt-mode)
    - [4.1 - Echo text back (can be put in "while(1)" in "main.c")](#41---echo-text-back-can-be-put-in-while1-in-mainc)
+-->
 
 <br/>
 
+<!--
 ## 1 - Installation instructions (Simplicity Studio v4)
 
 The following instructions are used when you want to be able to use `dbprint` in every project you create. Place the source files somewhere safe so you don't accidentally delete them!
@@ -86,6 +89,7 @@ Perform a *clean and build* action to fix errors that would occur when the proje
 4. Press OK.
 
 <br/>
+-->
 
 ## 2 - Methods
 
