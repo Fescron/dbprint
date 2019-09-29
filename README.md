@@ -9,40 +9,149 @@
 
 **DeBugPrint** is a homebrew minimal low-level `println/printf` replacement. It can be used to to print text/values to `uart`without a lot of external libraries. The end goal was to use no exernal libraries (with methods like ```itoa```) apart from the ones specific to the microcontroller.
 
-**DeBugPrint** was originally designed for use on the `Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48)` (SLSTK3400A) and was developed on `Simplicity Studio v4` on `Ubuntu 18.04 LTS`.
+**DeBugPrint** was originally designed for use on the `Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48)` (`SLSTK3400A`) and was developed on `Simplicity Studio v4` on `Ubuntu 19.04`.
 
 <br/>
 
-**NOTE:** There are a lot of useful simple code-examples at https://github.com/SiliconLabs/peripheral_examples
+- There are a lot of useful yet simple code-examples at https://github.com/SiliconLabs/peripheral_examples
+- Click [**here**](https://fescron.github.io/dbprint/index.html) to find a lot of **useful information** (general info, info about keywords and datatypes, ...) about the project and C in general.
+- Click [**here**](https://fescron.github.io/dbprint/dbprint_8h.html) to find **detailed information about all available methods**.
 
 <br/>
 
-<!--
 ## Table of contents
+- [dbprint](#dbprint)
+  - [Table of contents](#table-of-contents)
+  - [1 - Installation instructions](#1---installation-instructions)
+    - [1.1 - Add `dbprint` folder to your project](#11---add-dbprint-folder-to-your-project)
+    - [1.2 - Add `em_usart.c` to your project (if not already added)](#12---add-emusartc-to-your-project-if-not-already-added)
+    - [1.3 - Include `debug_dbprint.h` in your project's `main.c` (or another) file](#13---include-debugdbprinth-in-your-projects-mainc-or-another-file)
+    - [1.4 - Start adding dbprint functionality](#14---start-adding-dbprint-functionality)
+    - [1.5 - Clean & Build](#15---clean--build)
+  - [2 - Enable/disable dbprint using definition in `debug_dbprint.h`](#2---enabledisable-dbprint-using-definition-in-debugdbprinth)
+  - [3 - VCOM](#3---vcom)
+  - [4 - Energy profiler and dbprint](#4---energy-profiler-and-dbprint)
+  - [5 - Methods](#5---methods)
+    - [5.1 - Definitions](#51---definitions)
+    - [5.2 - Usage examples](#52---usage-examples)
+      - [5.2.1 - Basic functions](#521---basic-functions)
+      - [5.2.2 - More advanced functions](#522---more-advanced-functions)
+  - [6 - Alternate locations of pins](#6---alternate-locations-of-pins)
 
-- [1 - Installation instructions (Simplicity Studio v4)](#1---installation-instructions-simplicity-studio-v4)
-   - [1.1 - Add "dbprint.c" and "dbprint.h" to your project](#11---add-dbprintc-and-dbprinth-to-your-project)
-   - [1.2 - Add "em_usart.c" to your project (if not already added)](#12---add-em_usartc-to-your-project-if-not-already-added)
-   - [1.3 - Include "dbprint.h" in your project's "main.c" file](#13---include-dbprinth-in-your-projects-mainc-file)
-   - [1.4 - Clean & Build](#14---clean--build)
-- [2 - Methods](#2---methods)
-   - [2.1 - Definitions](#21---definitions)
-   - [2.2 - Usage examples](#22---usage-examples)
-      - [2.2.1 - Basic functions](#221---basic-functions)
-      - [2.2.2 - More advanced functions](#222---more-advanced-functions)
-- [3 - Alternate locations of pins](#3---alternate-locations-of-pins)
-- [4 - Code examples for when dbprint is in "interrupt mode"](#4---code-examples-for-when-dbprint-is-in-interrupt-mode)
-   - [4.1 - Echo text back (can be put in "while(1)" in "main.c")](#41---echo-text-back-can-be-put-in-while1-in-mainc)
--->
+
+<br/>
+
+## 1 - Installation instructions
+
+### 1.1 - Add `dbprint` folder to your project
+
+**Copy** the `dbprint` folder containing the header and source files from this repository to your project folder.
+
+Open the **project settings** using `File > Properties` (or right click on your project in the *Project Explorer* and choose `Properties`).
+
+In the opened window choose `C/C++ General > Paths and Symbols` on the left.
+
+In the tab **"Includes"**:
+
+1. Click `Add... > Workspace...`
+2. Browse to the **"dbprint"** folder in your project folder and press OK. 
+3. Check the boxes *"Add to all languages"* and *"Is a workspace path"* and press OK.
+
+<br/>
+
+### 1.2 - Add `em_usart.c` to your project (if not already added)
+
+In any *Simplicity Studio example project* (like **blink**) all of the header files (`.h`) for **`emlib`** are included but the source files (`.c`) are sometimes not. This needs to be done manually:
+
+1. In the **Project Explorer** on the left, rightclick on the **`emlib`** folder under your project and select `New > File from Template`
+2. Click on `Advanced>>`and check *"Link to file in the file system"*.
+3. Click `Browse...`, go to `SimplicityStudio_v4/developer/sdks/gecko_sdk_suite/v2.4/platform/emlib/src`, select the the **`em_usart.c`** file and press OK.
+4. Press FINISH.
+
+<br/>
+
+### 1.3 - Include `debug_dbprint.h` in your project's `main.c` (or another) file
+
+```C
+#include "debug_dbprint.h"
+```
+
+<br/>
+
+### 1.4 - Start adding dbprint functionality
+
+It's advised to **surround dbprint statements in your code with `IF ... ENDIF`** so they can be enabled/disabled by setting the definition `DEBUG_DBPRINT` in `debug_dbprint.h` to `1` or `0`:
+
+```C
+#if DEBUG_DBPRINT == 1 /* DEBUG_DBPRINT */
+
+dbprintln("Hello world!"); /* An example of a dbprint statement */
+
+#endif /* DEBUG_DBPRINT */
+```
+
+More information about this can be found in ["2 - Enable/disable dbprint using definition in `debug_dbprint.h`"](#2---enabledisable-dbprint-using-definition-in-debugdbprinth).
+
+<br/>
+
+### 1.5 - Clean & Build
+
+Perform a *clean and build* action to fix errors that would occur when the project would just get *build* after the dbprint files are added.
+
+1. Click `Project > Clean...`
+2. Select *"Clean projects selected below"* and check the current project.
+3. Check *"Start a build immediately"* while *"Build only the selected projects"* is selected.
+4. Press OK.
+
+<br/>
+
+## 2 - Enable/disable dbprint using definition in `debug_dbprint.h`
+
+In the file `debug_dbprint.h` dbprint UART functionality can be enabled/disabled with the definition `#define DEBUG_DBPRINT`. If it's value is `0`, all dbprint functionality is disabled. This means that the **only header file to include in your projects** for dbprint to work is `#include debug_dbprint.h`
+
+Again, it's advised to **surround dbprint statements in your code with `IF ... ENDIF`** so they can be enabled/disabled by setting the definition `DEBUG_DBPRINT` in `debug_dbprint.h` to `1` or `0`:
+
+```C
+#if DEBUG_DBPRINT == 1 /* DEBUG_DBPRINT */
+
+dbprintln("Hello world!"); /* An example of a dbprint statement */
+
+#endif /* DEBUG_DBPRINT */
+```
+
+<br/>
+
+## 3 - VCOM
+
+VCOM is an on-board (on the `SLSTK3400A`) **UART to USB converter** alongside the Segger J-Link debugger. It's connected with microcontroller pins `PA0` (RX) and `PF2` (TX). This converter can then be used with [Putty](https://www.putty.org/) or another serial port program.
+
+When you want to **debug using VCOM with interrupt functionality disabled**, you can use the following initialization settings:
+
+```C
+dbprint_INIT(USART1, 4, true, false);
+```
+
+When using dbprint functionality, the following **settings** are used:
+
+- `Baudrate = 115200`
+- `8 databits`
+- `1 stopbit`
+- `No parity`
+
+<br/>
+
+## 4 - Energy profiler and dbprint
+
+The Energy profiler in Simplicity Studio seems to use VCOM somehow. Use an **external UART adapter** if both the energy profiler and UART debugging are necessary at the same time!
+
+Don't forget to change the `INIT` arguments to select the correct pins if necessary! (see section ["6 - Alternate locations of pins"](#6---alternate-locations-of-pins)).
+
+If the energy profiler was used and the code functionality was switched, physically re-plug the board to make sure VCOM UART starts working again!
 
 <br/>
 
 <!--
-## 1 - Installation instructions (Simplicity Studio v4)
-
 The following instructions are used when you want to be able to use `dbprint` in every project you create. Place the source files somewhere safe so you don't accidentally delete them!
-
-### 1.1 - Add "dbprint.c" and "dbprint.h" to your project
 
 Open the project settings using `File > Properties > C/C++ General > Paths and Symbols`.
 
@@ -57,51 +166,19 @@ In the tab **"Source Location"**:
 1. Click `Link Folder...`
 2. Check *"Link to folder in the file system"*
 3. Click `Browse...`, select the the **"dbprint-scr"** folder and press OK.
-
-<br/>
-
-### 1.2 - Add "em_usart.c" to your project (if not already added)
-
-In any *Simplicity Studio example project* (like **blink**) all of the header files for "emlib" are included but the c-files are sometimes not. This needs to be done manually:
-
-1. In the **Project Explorer** on the left, rightclick on the **"emlib"** folder under your project and select `New > File from Template`
-2. Click on `Advanced>>`and check *"Link to file in the file system"*.
-3. Click `Browse...`, go to `SimplicityStudio_v4/developer/sdks/gecko_sdk_suite/v2.4/platform/emlib/src`, select the the **"em_usart.c"** file and press OK.
-4. Press FINISH.
-
-<br/>
-
-### 1.3 - Include "dbprint.h" in your project's "main.c" file
-
-```C
-#include "dbprint.h"
-```
-
-<br/>
-
-### 1.4 - Clean & Build
-
-Perform a *clean and build* action to fix errors that would occur when the project would just get "build" after the dbprint files are added.
-
-1. Click `Project > Clean...`
-2. Select *"Clean projects selected below"* and check the current project.
-3. Check *"Start a build immediately"* while *"Build only the selected projects"* is selected.
-4. Press OK.
-
-<br/>
 -->
 
-## 2 - Methods
+## 5 - Methods
 
-### 2.1 - Definitions
+### 5.1 - Definitions
 
-**Fixed baudrate = 115200 (8 databits, 1 stopbit, no parity)**.
+This is a list of all available methods. **Detailed documentation about them can be found [here](https://fescron.github.io/dbprint/dbprint_8h.html).**
 
 ```C
 void dbprint_INIT(USART_TypeDef* pointer, uint8_t location, bool vcom, bool interrupts);
-
-void dbAlert();
-void dbClear();
+ 
+void dbAlert(void);
+void dbClear(void);
 
 void dbprint(char *message);
 void dbprintln(char *message);
@@ -112,8 +189,8 @@ void dbprintlnInt(int32_t value);
 void dbprintInt_hex(int32_t value);
 void dbprintlnInt_hex(int32_t value);
 
-void dbprint_color(char *message, uint8_t color);
-void dbprintln_color(char *message, uint8_t color);
+void dbprint_color(char *message, dbprint_color_t color);
+void dbprintln_color(char *message, dbprint_color_t color);
 
 void dbinfo(char *message);
 void dbwarn(char *message);
@@ -127,26 +204,20 @@ void dbinfoInt_hex(char *message1, int32_t value, char *message2);
 void dbwarnInt_hex(char *message1, int32_t value, char *message2);
 void dbcritInt_hex(char *message1, int32_t value, char *message2);
 
-char dbReadChar();
-uint8_t dbReadInt();
+char dbReadChar(void);
+uint8_t dbReadInt(void);
 void dbReadLine(char *buf);
 
-void uint32_to_charHex(char *buf, uint32_t value, bool spacing);
-void uint32_to_charDec(char *buf, uint32_t value);
-
-uint32_t charDec_to_uint32(char *buf);
-uint32_t charHex_to_uint32(char *buf);
+bool dbGet_RXstatus(void);
+void dbSet_TXbuffer(char *message);
+void dbGet_RXbuffer(char *buf);
 ```
 
 <br/>
 
-### 2.2 - Usage examples
+### 5.2 - Usage examples
 
-**NOTE:** VCOM is an on-board UART to USB converter alongside the *Segger J-Link debugger*, connected with microcontroller pins `PA0` (RX) and `PF2` (TX). This converter can then be used with [Putty](https://www.putty.org/) or another serial port program. 
-
-**WARNING:** If the *Energy profiler* inside Simplicity Studio is used, printing to VCOM doesn't really work, use an external UART to USB converter while profiling the energy usage!
-
-### 2.2.1 - Basic functions
+#### 5.2.1 - Basic functions
 
 ```C
 dbprint_INIT(USART1, 4, true, false); /* Initialize UART1 on VCOM, no interrupts*/
@@ -156,6 +227,10 @@ dbprint_INIT(USART1, 4, true, false); /* Initialize UART1 on VCOM, no interrupts
 dbprint("Hello World");    /* Print text to uart */
 dbprintln("");             /* Go to next line */
 dbprintln("Hello World");  /* Print text to uart and go to the next line */
+
+dbinfo("Info.");           /* Print an info message (prefix "INFO: ") */
+dbwarn("Warning.");        /* Print a warning message in yellow (prefix "WARN: ") */
+dbcrit("Critical error."); /* Print a critical error message in red (prefix "CRIT: ") */
 ```
 
 ```C
@@ -193,7 +268,7 @@ dbReadLine(testArray);
 dbprintln(testArray);
 ```
 
-### 2.2.2 - More advanced functions
+#### 5.2.2 - More advanced functions
 
 ```C
 dbAlert(); /* Let the console make an "alert" (bell) sound */
@@ -201,15 +276,9 @@ dbClear(); /* Clear the console window */
 ```
 
 ```C
-dbprint_color("Hello World", 1);   /* Print red text to uart */
-dbprintln("");                     /* Go to next line */
-dbprintln_color("Hello World", 1); /* Print red text to uart and go to the next line */
-```
-
-```C
-dbinfo("Info.");           /* Print an info message with prefix "INFO: " */
-dbwarn("Warning.");        /* Print a warning message in yellow with prefix "WARN: " */
-dbcrit("Critical error."); /* Print a critical error message in red with prefix "CRIT: " */
+dbprint_color("Hello World", RED);   /* Print red text to uart */
+dbprintln("");                       /* Go to next line */
+dbprintln_color("Hello World", RED); /* Print red text to uart and go to the next line */
 ```
 
 ```C
@@ -242,15 +311,17 @@ dbcritInt_hex("Critical error = ", value, " [unit of value]");
 
 <br/>
 
-## 3 - Alternate locations of pins
+## 6 - Alternate locations of pins
 
-In C, pin selection happens at the end of initialization methods using statements like:
+In C, pin selection/routing happens at the end of initialization methods using statements like:
 
 ```C
 USART1->ROUTE |= USART_ROUTE_TXPEN | USART_ROUTE_RXPEN | USART_ROUTE_LOCATION_LOC0;
 ```
 
-If you use **dbprint** you don't really need to worry about this but you need to make sure you still select the correct location while using the `dbprint_INIT` method. The following location numbers and corresponding `RX`and `TX`pins for `USART0`and `USART1` are given below.
+If you use dbprint you don't really need to worry about this but you need to make sure you **select the correct location when calling the `dbprint_INIT` method**.
+
+The location numbers and corresponding `RX`and `TX`pins for `USART0`and `USART1` (EFM32HG322) are given below.
 
 | Location |  #0  |  #1  |  #2  |  #3  |  #4  |  #5  |  #6  |
 | -------- |:----:|:----:|:----:|:----:|:----:|:----:|:----:| 
@@ -261,9 +332,10 @@ If you use **dbprint** you don't really need to worry about this but you need to
 
 <br/>
 
-## 4 - Code examples for when dbprint is in "interrupt mode"
+<!--
+Code examples for when dbprint is in "interrupt mode"
 
-### 4.1 - Echo text back (can be put in "while(1)" in "main.c")
+Echo text back (can be put in "while(1)" in "main.c")
 
 ```C
 /* Data is ready to retransmit (notified by the RX handler) */
@@ -306,3 +378,4 @@ if (dbprint_rxdata)
    USART_IntSet(dbpointer, USART_IFS_TXC);
 }
 ```
+-->

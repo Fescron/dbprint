@@ -56,7 +56,7 @@
  *     `dbprint_INIT(USART1, 4, true, false);`
  *
  *   @note
- *     When using `dbprint` functionality, the following settings are used:
+ *     When using `dbprint` functionality, the following settings are used:@n
  *       - Baudrate = 115200
  *       - 8 databits
  *       - 1 stopbit

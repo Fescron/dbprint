@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file dbprint.h
- * @brief Homebrew println/printf replacement "DeBugPRINT".
+ * @brief Homebrew println/printf replacement "DeBugPrint".
  * @version 5.1
  * @author Brecht Van Eeckhoudt
  *
