@@ -36,6 +36,7 @@
     - [5.2 - Usage examples](#52---usage-examples)
       - [5.2.1 - Basic functions](#521---basic-functions)
       - [5.2.2 - More advanced functions](#522---more-advanced-functions)
+      - [5.2.3 - Interrupt functionality](#523---interrupt-functionality)
   - [6 - Alternate locations of pins](#6---alternate-locations-of-pins)
 
 
@@ -209,7 +210,6 @@ uint8_t dbReadInt(void);
 void dbReadLine(char *buf);
 
 bool dbGet_RXstatus(void);
-void dbSet_TXbuffer(char *message);
 void dbGet_RXbuffer(char *buf);
 ```
 
@@ -268,6 +268,8 @@ dbReadLine(testArray);
 dbprintln(testArray);
 ```
 
+<br/>
+
 #### 5.2.2 - More advanced functions
 
 ```C
@@ -311,6 +313,32 @@ dbcritInt_hex("Critical error = ", value, " [unit of value]");
 
 <br/>
 
+#### 5.2.3 - Interrupt functionality
+
+Dbprint can also be put in **interrupt mode** by using the `INIT` arguments below, using VCOM for this example. Then, **received characters will be automatically stored in an internal buffer** for later use.
+
+```C
+dbprint_INIT(USART1, 4, true, true); /* Initialize dbprint on VCOM, interrupt mode */
+```
+
+A *getter* (`dbGet_RXstatus();`) can be used to check if there is received data in this internal buffer and another *getter* (`dbGet_RXbuffer();`) can be used to copy the data from this internal buffer to another one.
+
+An example using these two getters is depicted below and can be put in, for example, the `main.c` file.
+
+```C
+bool received = dbGet_RXstatus(); /* Check if there is data received in the buffer */
+
+/* If we received data do the following */
+if (received)
+{
+  char buf[DBPRINT_BUFFER_SIZE]; /* Create a temporary buffer to store the received data in */
+  dbGet_RXbuffer(buf); /* Copy the received data to this temporary buffer */
+  dbprintln(buf); /* Print the contents of this temporary buffer in the terminal */
+}
+```
+
+<br/>
+
 ## 6 - Alternate locations of pins
 
 In C, pin selection/routing happens at the end of initialization methods using statements like:
@@ -329,53 +357,3 @@ The location numbers and corresponding `RX`and `TX`pins for `USART0`and `USART1`
 | US0_TX   | PE10 |      |      | PE13 | PB7  | PC0  | PC0  |
 | US1_RX   | PC1  |      | PD6  | PD6  | PA0  | PC2  |      |
 | US1_TX   | PC0  |      | PD7  | PD7  | PF2  | PC1  |      |
-
-<br/>
-
-<!--
-Code examples for when dbprint is in "interrupt mode"
-
-Echo text back (can be put in "while(1)" in "main.c")
-
-```C
-/* Data is ready to retransmit (notified by the RX handler) */
-if (dbprint_rxdata)
-{
-   uint32_t i;
-
-   /* RX Data Valid Interrupt Enable
-    *   Set when data is available in the receive buffer. Cleared when the receive buffer is empty.
-    *
-    * TX Complete Interrupt Enable
-    *   Set when a transmission has completed and no more data is available in the transmit buffer.
-    *   Cleared when a new transmission starts.
-    */
-
-   /* Disable "RX Data Valid Interrupt Enable" and "TX Complete Interrupt Enable" interrupts */
-   USART_IntDisable(dbpointer, USART_IEN_RXDATAV);
-   USART_IntDisable(dbpointer, USART_IEN_TXC);
-
-   /* Copy data from the RX buffer to the TX buffer */
-   for (i = 0; dbprint_rx_buffer[i] != 0 && i < DBPRINT_BUFFER_SIZE-3; i++)
-   {
-      dbprint_tx_buffer[i] = dbprint_rx_buffer[i];
-   }
-
-   /* Add "new line" characters */
-   dbprint_tx_buffer[i++] = '\r';
-   dbprint_tx_buffer[i++] = '\n';
-   dbprint_tx_buffer[i] = '\0';
-
-   /* Reset "notification" variable */
-   dbprint_rxdata = false;
-
-   /* Enable "RX Data Valid Interrupt" and "TX Complete Interrupt" interrupts */
-   USART_IntEnable(dbpointer, USART_IEN_RXDATAV);
-   USART_IntEnable(dbpointer, USART_IEN_TXC);
-
-   /* Set TX Complete Interrupt Flag (transmission has completed and no more data 
-    * is available in the transmit buffer) */
-   USART_IntSet(dbpointer, USART_IFS_TXC);
-}
-```
--->
