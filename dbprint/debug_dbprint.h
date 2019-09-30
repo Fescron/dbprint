@@ -2,10 +2,10 @@
  * @file debug_dbprint.h
  * @brief Enable or disable printing to UART with dbprint.
  * @details
- *   This header file should be called in every other file where there are UART
+ *   **This header file should be called in every other file where there are UART
  *   dbprint debugging statements. Depending on the value of `DEBUG_DBPRINT`,
- *   UART statements are enabled or disabled.
- * @version 1.1
+ *   UART statements are enabled or disabled.**
+ * @version 6.0
  * @author Brecht Van Eeckhoudt
  *
  * ******************************************************************************

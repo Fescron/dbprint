@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @file dbprint.h
  * @brief Homebrew println/printf replacement "DeBugPrint".
- * @version 5.1
+ * @version 6.0
  * @author Brecht Van Eeckhoudt
  *
  * ******************************************************************************
@@ -61,7 +61,7 @@ typedef enum dbprint_colors
 } dbprint_color_t;
 
 
-/** Public variable to store the settings (pointer). */
+/** Public (`extern`) variable to store the settings (pointer). */
 extern USART_TypeDef* dbpointer;
 
 
@@ -100,7 +100,7 @@ uint8_t dbReadInt (void);
 void dbReadLine (char *buf);
 
 bool dbGet_RXstatus (void);
-void dbSet_TXbuffer (char *message);
+// void dbSet_TXbuffer (char *message); // TODO: Needs fixing (but probably won't ever be used)
 void dbGet_RXbuffer (char *buf);
 
 

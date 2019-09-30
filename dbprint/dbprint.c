@@ -2,7 +2,7 @@
  * @file dbprint.c
  * @brief Homebrew println/printf replacement "DeBugPrint".
  * @details Originally designed for use on the Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48).
- * @version 5.1
+ * @version 6.0
  * @author Brecht Van Eeckhoudt
  *
  * ******************************************************************************
@@ -36,17 +36,14 @@
  *   @li v5.0: Made uint-char conversion methods static, moved color functionality to enum,
  *             started moving interrupt functionality to use getters and setters.
  *   @li v5.1: Fixed interrupt functionality with getters and setters.
+ *   @li v6.0: Cleaned up interrupt functionality and added some documentation.
+ *             (put some code in comments to maybe fix later if ever necessary)
  *
  * ******************************************************************************
  *
  * @todo
- *   - Use getters and setters instead of "extern" for the interrupt buffers?
- *       - Not safe if multiple ISR's are using the same "extern"!
- *       - Use "atomic" stuff when an action has to be performed before other interrupts can be called?
- *       - CORE_ENTER_ATOMIC() ? ~ disable certain interrupts
- *
- * @todo
  *   **Future improvements:**@n
+ *     - Fix `dbSet_TXbuffer` and also add more functionality to print numbers, ...
  *     - Separate back-end <-> MCU specific code
  *
  * ******************************************************************************
@@ -125,7 +122,7 @@ static volatile char tx_buffer[DBPRINT_BUFFER_SIZE];
 static void uint32_to_charHex (char *buf, uint32_t value, bool spacing);
 static void uint32_to_charDec (char *buf, uint32_t value);
 static uint32_t charDec_to_uint32 (char *buf);
-static uint32_t charHex_to_uint32 (char *buf);
+//static uint32_t charHex_to_uint32 (char *buf); // Unused but kept here just in case
 
 
 /**************************************************************************//**
@@ -913,40 +910,89 @@ bool dbGet_RXstatus (void)
 }
 
 
-/**************************************************************************//**
- * @brief
- *   Set the value of the TX buffer and start transmitting it using interrupts.
- *
- * @note
- *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
- *   the input message (array) needs to end with NULL (`"\0"`)!
- *
- * @note
- *   The index of the RX buffer gets reset in the TX handler when all the
- *   characters in the buffer are send.
- *
- * @attention
- *   Interrupt functionality has to be enabled on initialization for this
- *   function to work correctly.
- *
- * @param[in] message
- *   The string to put in the TX buffer.
- *****************************************************************************/
-void dbSet_TXbuffer (char *message)
-{
-	// TODO: Do we need to disable some interrupts?
-
-	uint32_t i;
-
-	/* Copy data to the TX buffer */
-	for (i = 0; message[i] != 0 && i < DBPRINT_BUFFER_SIZE-1; i++)
-	{
-		tx_buffer[i] = message[i];
-	}
-
-	/* Add NULL termination character */
-	tx_buffer[i++] = '\0';
-}
+// TODO: Needs fixing (but probably won't ever be used):
+//**************************************************************************//**
+// * @brief
+// *   Set the value of the TX buffer and start transmitting it using interrupts.
+// *
+// * @details
+// *   The `"TX Complete Interrupt Flag"` also gets set at the end of the
+// *   function (transmission has completed and no more data is available
+// *   in the transmit buffer).
+// *
+// * @note
+// *   If the input is not a string (ex.: `"Hello world!"`) but a char array,
+// *   the input message (array) needs to end with NULL (`"\0"`)!
+// *
+// * @note
+// *   The index of the RX buffer gets reset in the TX handler when all the
+// *   characters in the buffer are send.
+// *
+// * @attention
+// *   Interrupt functionality has to be enabled on initialization for this
+// *   function to work correctly.
+// *
+// * @param[in] message
+// *   The string to put in the TX buffer.
+// *****************************************************************************/
+//void dbSet_TXbuffer (char *message)
+//{
+//	uint32_t i;
+//
+//	/* Copy data to the TX buffer */
+//	for (i = 0; message[i] != 0 && i < DBPRINT_BUFFER_SIZE-1; i++)
+//	{
+//		tx_buffer[i] = message[i];
+//	}
+//
+//	/* Set TX Complete Interrupt Flag (transmission has completed and no more data
+//	* is available in the transmit buffer) */
+//	USART_IntSet(dbpointer, USART_IFS_TXC);
+//
+// TODO: Perhaps some functionality needs to be added to send numbers and
+//       that might need functionality to disable interrupts. For reference
+//       some old code that could be put in a main.c file is put below.
+//	/* Data is ready to retransmit (notified by the RX handler) */
+//	if (dbprint_rxdata)
+//	{
+//		uint32_t i;
+//
+//		/* RX Data Valid Interrupt Enable
+//		*   Set when data is available in the receive buffer. Cleared when the receive buffer is empty.
+//		*
+//		* TX Complete Interrupt Enable
+//		*   Set when a transmission has completed and no more data is available in the transmit buffer.
+//		*   Cleared when a new transmission starts.
+//		*/
+//
+//		/* Disable "RX Data Valid Interrupt Enable" and "TX Complete Interrupt Enable" interrupts */
+//		USART_IntDisable(dbpointer, USART_IEN_RXDATAV);
+//		USART_IntDisable(dbpointer, USART_IEN_TXC);
+//
+//		/* Copy data from the RX buffer to the TX buffer */
+//		for (i = 0; dbprint_rx_buffer[i] != 0 && i < DBPRINT_BUFFER_SIZE-3; i++)
+//		{
+//			dbprint_tx_buffer[i] = dbprint_rx_buffer[i];
+//		}
+//
+//		/* Add "new line" characters */
+//		dbprint_tx_buffer[i++] = '\r';
+//		dbprint_tx_buffer[i++] = '\n';
+//		dbprint_tx_buffer[i] = '\0';
+//
+//		/* Reset "notification" variable */
+//		dbprint_rxdata = false;
+//
+//		/* Enable "RX Data Valid Interrupt" and "TX Complete Interrupt" interrupts */
+//		USART_IntEnable(dbpointer, USART_IEN_RXDATAV);
+//		USART_IntEnable(dbpointer, USART_IEN_TXC);
+//
+//		/* Set TX Complete Interrupt Flag (transmission has completed and no more data
+//		* is available in the transmit buffer) */
+//		USART_IntSet(dbpointer, USART_IFS_TXC);
+//	}
+//
+//}
 
 
 /**************************************************************************//**
@@ -968,8 +1014,6 @@ void dbSet_TXbuffer (char *message)
  *****************************************************************************/
 void dbGet_RXbuffer (char *buf)
 {
-	// TODO: Do we need to disable some interrupts?
-
 	if (dataReceived)
 	{
 		uint32_t i;
@@ -988,7 +1032,7 @@ void dbGet_RXbuffer (char *buf)
 	}
 	else
 	{
-		dbcrit("No data received!");
+		dbcrit("No received data available!");
 	}
 }
 
@@ -1164,58 +1208,59 @@ static uint32_t charDec_to_uint32 (char *buf)
 }
 
 
-/**************************************************************************//**
- * @brief
- *   Convert a string (char array) in hexadecimal notation to a `uint32_t` value.
- *
- * @note
- *   If the input is not a string (ex.: `"00120561"`) but a char array,
- *   the input buffer (array) needs to end with NULL (`"\0"`)!@n
- *   The input string can't have the prefix `0x`.
- *
- * @note
- *   This is a static method because it's only internally used in this file
- *   and called by other methods if necessary.
- *
- * @param[in] buf
- *   The hexadecimal string to convert to a `uint32_t` value.
- *
- * @return
- *   The resulting `uint32_t` value.
- *****************************************************************************/
-static uint32_t charHex_to_uint32 (char *buf)
-{
-	/* Value to eventually return */
-	uint32_t value = 0;
-
-	/* Loop until buffer is empty */
-	while (*buf)
-	{
-		/* Get current character, increment afterwards */
-		uint8_t byte = *buf++;
-
-		/* Convert the hex character to the 4-bit equivalent
-		 * number using the ASCII table indexes */
-		if (byte >= '0' && byte <= '9') byte = byte - '0';
-		else if (byte >= 'a' && byte <='f') byte = byte - 'a' + 10;
-		else if (byte >= 'A' && byte <='F') byte = byte - 'A' + 10;
-
-		/* Check if the next byte we need to add can fit in a uint32_t */
-		if ( (value <= 0xFFFFFFF) && (byte <= 0xF) )
-		{
-			/* Shift one nibble (4 bits) to make space for a new digit
-			 * and add the 4 bits (ANDing with a mask, 0xF = 0b1111) */
-			value = (value << 4) | (byte & 0xF);
-		}
-		else
-		{
-			/* Given buffer can't fit in uint32_t */
-			return (0);
-		}
-	}
-
-	return (value);
-}
+// Unused but kept here just in case:
+//**************************************************************************//**
+// * @brief
+// *   Convert a string (char array) in hexadecimal notation to a `uint32_t` value.
+// *
+// * @note
+// *   If the input is not a string (ex.: `"00120561"`) but a char array,
+// *   the input buffer (array) needs to end with NULL (`"\0"`)!@n
+// *   The input string can't have the prefix `0x`.
+// *
+// * @note
+// *   This is a static method because it's only internally used in this file
+// *   and called by other methods if necessary.
+// *
+// * @param[in] buf
+// *   The hexadecimal string to convert to a `uint32_t` value.
+// *
+// * @return
+// *   The resulting `uint32_t` value.
+// *****************************************************************************/
+//static uint32_t charHex_to_uint32 (char *buf)
+//{
+//	/* Value to eventually return */
+//	uint32_t value = 0;
+//
+//	/* Loop until buffer is empty */
+//	while (*buf)
+//	{
+//		/* Get current character, increment afterwards */
+//		uint8_t byte = *buf++;
+//
+//		/* Convert the hex character to the 4-bit equivalent
+//		 * number using the ASCII table indexes */
+//		if (byte >= '0' && byte <= '9') byte = byte - '0';
+//		else if (byte >= 'a' && byte <='f') byte = byte - 'a' + 10;
+//		else if (byte >= 'A' && byte <='F') byte = byte - 'A' + 10;
+//
+//		/* Check if the next byte we need to add can fit in a uint32_t */
+//		if ( (value <= 0xFFFFFFF) && (byte <= 0xF) )
+//		{
+//			/* Shift one nibble (4 bits) to make space for a new digit
+//			 * and add the 4 bits (ANDing with a mask, 0xF = 0b1111) */
+//			value = (value << 4) | (byte & 0xF);
+//		}
+//		else
+//		{
+//			/* Given buffer can't fit in uint32_t */
+//			return (0);
+//		}
+//	}
+//
+//	return (value);
+//}
 
 
 /**************************************************************************//**
