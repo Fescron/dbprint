@@ -14,7 +14,7 @@
 <br/>
 
 - There are a lot of useful yet simple code-examples at https://github.com/SiliconLabs/peripheral_examples
-- Click [**here**](https://fescron.github.io/dbprint/index.html) to find a lot of **useful information** (general info, info about keywords and datatypes, ...) about the project and C in general.
+- Click [**here**](https://fescron.github.io/dbprint/dbprint__documentation_8h.html) to find a lot of **useful information** (general info, info about keywords and datatypes, ...) about the project and C in general.
 - Click [**here**](https://fescron.github.io/dbprint/dbprint_8h.html) to find **detailed information about all available methods**.
 
 <br/>
