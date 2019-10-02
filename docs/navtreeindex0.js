@@ -50,7 +50,6 @@ var NAVTREEINDEX0 =
 "dbprint_8h.html":[1,0,0,1],
 "dbprint_8h.html#a0511ddad2e00a8187d5449b15de7eb4f":[1,0,0,1,11],
 "dbprint_8h.html#a05cd4086fbb7c752337b52c49c31d16b":[1,0,0,1,20],
-"dbprint_8h.html#a17cb68175234053c0b4f7356b6b20e18":[1,0,0,1,28],
 "dbprint_8h.html#a1a7a7976e72dd2dd28014a9179d56aaf":[1,0,0,1,17],
 "dbprint_8h.html#a1ab19a6b15298e2a0bb7ba320cf8b540":[1,0,0,1,1],
 "dbprint_8h.html#a2438c70ed863bee3348de2d4fc525031":[1,0,0,1,9],
