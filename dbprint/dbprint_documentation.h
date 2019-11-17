@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @file dbprint_documentation.h
  * @brief This file contains useful documentation closely related to dbprint.
- * @version 6.2
+ * @version 7.0
  * @author Brecht Van Eeckhoudt
  *
  * ******************************************************************************
@@ -30,7 +30,7 @@
  *   with the definition `#define DEBUG_DBPRINT`. If it's value is `0`, all dbprint
  *   functionality is disabled.
  *
- *   @note
+ *   @warning
  *     This means that the **only header file to include in your projects** for
  *     dbprint to work is@n
  *     `#include debug_dbprint.h`
@@ -44,7 +44,15 @@
  *
  * ******************************************************************************
  *
- * @section DBPRINT More info about dbprint and VCOM
+ * @section DBPRINT More info about dbprint (and VCOM)
+ *
+ *   @note
+ *     When using `dbprint` functionality, the following settings are used and
+ *     can't be changed without editing the source code:@n
+ *       - Baudrate = 115200
+ *       - 8 databits
+ *       - 1 stopbit
+ *       - No parity
  *
  *   VCOM is an on-board (SLSTK3400A) UART to USB converter alongside the Segger
  *   J-Link debugger, connected with microcontroller pins `PA0` (RX) and `PF2` (TX).
@@ -55,12 +63,11 @@
  *     can use the following initialization settings:@n
  *     `dbprint_INIT(USART1, 4, true, false);`
  *
- *   @note
- *     When using `dbprint` functionality, the following settings are used:@n
- *       - Baudrate = 115200
- *       - 8 databits
- *       - 1 stopbit
- *       - No parity
+ *   @warning
+ *     Setting the third argument to `true` indicates to the code that `PA9`
+ *     (`EFM_BC_EN`) should be set high to enable the isolation switch on the PCB
+ *     of the Happy Gecko to link `PA0` (RX) and `PF2` (TX) to the debugger. Don't
+ *     use this pin yourself if you want to make use of the on-board UART to USB converter!
  *
  * ******************************************************************************
  *
@@ -89,6 +96,8 @@
  *     - USART1 #4 (USART0 can't be used)
  *     - RX - `PA0`
  *     - TX - `PF2`
+ *     - Isolation switch - `PA9` (`EFM_BC_EN`)
+ *       (don't use this pin yourself when using the on-board UART to USB converter)
  *
  * ******************************************************************************
  *
@@ -98,12 +107,25 @@
  *
  *   The `volatile` type indicates to the compiler that the data is not normal memory,
  *   and could change at unexpected times. Hardware registers are often volatile,
- *   and so are variables which get changed in interrupts.
+ *   and so are variables which get changed in interrupts.@n
+ *   Volatile variables are stored in *RAM*.
  *
  *   @subsection Static
  *
- *   - **Static variable inside a function:** The variable keeps its value between invocations.
- *   - **Static global variable or function:** The variable or function is only "seen" in the file it's declared in.
+ *   @subsubsection VARIABLE Static variable
+ *
+ *   During compile time (this is why we can't use variable length array's) memory
+ *   gets reserved for this variable. The data itself gets put in the *data* segment
+ *   of the memory (regular variables are put in the *stack* segment).@n
+ *   It's best to keep the use of `static` variables to a minimum. One should ask
+ *   himself the question if it's necessary to keep the variable constantly in the
+ *   memory. If the answer is yes, a `static` variable is acceptable.@n
+ *   A **static variable inside a function** keeps its value between invocations.
+ *
+ *   @subsubsection FUNCTION Static global function
+ *
+ *   The function is only "seen" in the file it's declared in. This means `static`
+ *   can be used for methods the same way `private` is used for certain methods in C++.
  *
  * ******************************************************************************
  *
@@ -121,5 +143,8 @@
  *  | `int8_t`   | `signed char`    | 1 byte  | -128           | 127                           |
  *  | `int16_t`  | `signed short`   | 2 bytes | -32 768        | 32 767                        |
  *  | `int32_t`  | `signed int`     | 4 bytes | -2 147 483 648 | 2 147 483 647                 |
+ *
+ *   - `-128` = `0x80` = `0b1000 0000` (If the left most bit is one, the sign of the number is negative)
+ *   -  `127` = `0x7F` = `0b0111 1111`
  *
  ******************************************************************************/
