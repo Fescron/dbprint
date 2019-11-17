@@ -70,7 +70,7 @@ $(document).ready(function(){initNavTree('dbprint__documentation_8h.html','');})
 <p><a href="dbprint__documentation_8h_source.html">Go to the source code of this file.</a></p>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>This file contains useful documentation closely related to dbprint. </p>
-<dl class="section version"><dt>Version</dt><dd>6.2 </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>7.0 </dd></dl>
 <dl class="section author"><dt>Author</dt><dd>Brecht Van Eeckhoudt</dd></dl>
 <hr/>
 <h1><a class="anchor" id="DeBugPrint"></a>
@@ -84,21 +84,16 @@ Doxygen</h1>
 <h1><a class="anchor" id="ENABLE"></a>
 Enable/disable dbprint using definition in `debug_dbprint.h`</h1>
 <p>In the file <code><a class="el" href="debug__dbprint_8h.html" title="Enable or disable printing to UART with dbprint. ">debug_dbprint.h</a></code> <b>dbprint UART functionality can be enabled/disabled</b> with the definition <code>#define DEBUG_DBPRINT</code>. If it's value is <code>0</code>, all dbprint functionality is disabled.</p>
-<dl class="section note"><dt>Note</dt><dd>This means that the <b>only header file to include in your projects</b> for dbprint to work is<br />
- <code>#include <a class="el" href="debug__dbprint_8h.html" title="Enable or disable printing to UART with dbprint. ">debug_dbprint.h</a></code></dd>
-<dd>
-If you also want to use this definition to enable/disable dbprint statements in your code, please use the following convention:<br />
+<dl class="section warning"><dt>Warning</dt><dd>This means that the <b>only header file to include in your projects</b> for dbprint to work is<br />
+ <code>#include <a class="el" href="debug__dbprint_8h.html" title="Enable or disable printing to UART with dbprint. ">debug_dbprint.h</a></code></dd></dl>
+<dl class="section note"><dt>Note</dt><dd>If you also want to use this definition to enable/disable dbprint statements in your code, please use the following convention:<br />
  <code>#if DEBUG_DBPRINT == 1 // DEBUG_DBPRINT</code><br />
  <code>&lt;your source code dbprint statements go here&gt;</code><br />
  <code>#endif // DEBUG_DBPRINT</code></dd></dl>
 <hr/>
 <h1><a class="anchor" id="DBPRINT"></a>
-More info about dbprint and VCOM</h1>
-<p>VCOM is an on-board (SLSTK3400A) UART to USB converter alongside the Segger J-Link debugger, connected with microcontroller pins <code>PA0</code> (RX) and <code>PF2</code> (TX). This converter can then be used with Putty or another serial port program.</p>
-<dl class="section note"><dt>Note</dt><dd>When you want to debug using VCOM with interrupt functionality disabled, you can use the following initialization settings:<br />
- <code>dbprint_INIT(USART1, 4, true, false);</code></dd>
-<dd>
-When using <code>dbprint</code> functionality, the following settings are used:<br />
+More info about dbprint (and VCOM)</h1>
+<dl class="section note"><dt>Note</dt><dd>When using <code>dbprint</code> functionality, the following settings are used and can't be changed without editing the source code:<br />
 <ul>
 <li>Baudrate = 115200</li>
 <li>8 databits</li>
@@ -106,6 +101,10 @@ When using <code>dbprint</code> functionality, the following settings are used:<
 <li>No parity</li>
 </ul>
 </dd></dl>
+<p>VCOM is an on-board (SLSTK3400A) UART to USB converter alongside the Segger J-Link debugger, connected with microcontroller pins <code>PA0</code> (RX) and <code>PF2</code> (TX). This converter can then be used with Putty or another serial port program.</p>
+<dl class="section note"><dt>Note</dt><dd>When you want to debug using VCOM with interrupt functionality disabled, you can use the following initialization settings:<br />
+ <code>dbprint_INIT(USART1, 4, true, false);</code></dd></dl>
+<dl class="section warning"><dt>Warning</dt><dd>Setting the third argument to <code>true</code> indicates to the code that <code>PA9</code> (<code>EFM_BC_EN</code>) should be set high to enable the isolation switch on the PCB of the Happy Gecko to link <code>PA0</code> (RX) and <code>PF2</code> (TX) to the debugger. Don't use this pin yourself if you want to make use of the on-board UART to USB converter!</dd></dl>
 <hr/>
 <h1><a class="anchor" id="ENERGY"></a>
 Energy profiler and dbprint</h1>
@@ -132,19 +131,25 @@ Alternate UART Functionality Pinout</h1>
 <li>USART1 #4 (USART0 can't be used)</li>
 <li>RX - <code>PA0</code></li>
 <li>TX - <code>PF2</code></li>
+<li>Isolation switch - <code>PA9</code> (<code>EFM_BC_EN</code>) (don't use this pin yourself when using the on-board UART to USB converter)</li>
 </ul>
 <hr/>
 <h1><a class="anchor" id="Keywords"></a>
 Keywords</h1>
 <h2><a class="anchor" id="Volatile"></a>
 Volatile</h2>
-<p>The <code>volatile</code> type indicates to the compiler that the data is not normal memory, and could change at unexpected times. Hardware registers are often volatile, and so are variables which get changed in interrupts.</p>
+<p>The <code>volatile</code> type indicates to the compiler that the data is not normal memory, and could change at unexpected times. Hardware registers are often volatile, and so are variables which get changed in interrupts.<br />
+ Volatile variables are stored in <em>RAM</em>.</p>
 <h2><a class="anchor" id="Static"></a>
 Static</h2>
-<ul>
-<li><b>Static variable inside a function:</b> The variable keeps its value between invocations.</li>
-<li><b>Static global variable or function:</b> The variable or function is only "seen" in the file it's declared in.</li>
-</ul>
+<h3><a class="anchor" id="VARIABLE"></a>
+Static variable</h3>
+<p>During compile time (this is why we can't use variable length array's) memory gets reserved for this variable. The data itself gets put in the <em>data</em> segment of the memory (regular variables are put in the <em>stack</em> segment).<br />
+ It's best to keep the use of <code>static</code> variables to a minimum. One should ask himself the question if it's necessary to keep the variable constantly in the memory. If the answer is yes, a <code>static</code> variable is acceptable.<br />
+ A <b>static variable inside a function</b> keeps its value between invocations.</p>
+<h3><a class="anchor" id="FUNCTION"></a>
+Static global function</h3>
+<p>The function is only "seen" in the file it's declared in. This means <code>static</code> can be used for methods the same way <code>private</code> is used for certain methods in C++.</p>
 <hr/>
 <h1><a class="anchor" id="DATA"></a>
 Bits, bytes, nibbles and unsigned/signed integer value ranges</h1>
@@ -170,6 +175,10 @@ Bits, bytes, nibbles and unsigned/signed integer value ranges</h1>
 <tr>
 <td><code>int32_t</code> </td><td><code>signed int</code> </td><td>4 bytes </td><td>-2 147 483 648 </td><td>2 147 483 647 </td></tr>
 </table>
+<ul>
+<li><code>-128</code> = <code>0x80</code> = <code>0b1000 0000</code> (If the left most bit is one, the sign of the number is negative)</li>
+<li><code>127</code> = <code>0x7F</code> = <code>0b0111 1111</code> </li>
+</ul>
 
 <p class="definition">Definition in file <a class="el" href="dbprint__documentation_8h_source.html">dbprint_documentation.h</a>.</p>
 </div></div><!-- contents -->
@@ -178,7 +187,7 @@ Bits, bytes, nibbles and unsigned/signed integer value ranges</h1>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_ca5fbc3f6f6667caf4918c667fbe5e47.html">dbprint</a></li><li class="navelem"><a class="el" href="dbprint__documentation_8h.html">dbprint_documentation.h</a></li>
-    <li class="footer">Generated on Fri Oct 4 2019 21:50:44 for DeBugPrint (dbprint) by
+    <li class="footer">Generated on Sun Nov 17 2019 20:57:52 for DeBugPrint (dbprint) by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>
   </ul>
