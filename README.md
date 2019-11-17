@@ -7,9 +7,9 @@
 ![Target device](https://img.shields.io/badge/target%20device-EFM32HG322F64G-yellow.svg)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/Fescron/dbprint.svg)
 
-**DeBugPrint** is a homebrew minimal low-level `println/printf` replacement. It can be used to to print text/values to `uart`without a lot of external libraries. The end goal was to use no exernal libraries (with methods like ```itoa```) apart from the ones specific to the microcontroller.
+**DeBugPrint** is a homebrew minimal low-level `println/printf` replacement. It can be used to to print text/values to `UART`without a lot of external libraries. The end goal was to use no exernal libraries (with methods like `itoa`) apart from the ones specific to the microcontroller.
 
-**DeBugPrint** was originally designed for use on the `Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48)` (`SLSTK3400A`) and was developed on `Simplicity Studio v4` on `Ubuntu 19.04`.
+**DeBugPrint** was originally designed for use on the `Silicon Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48)` (`SLSTK3400A`) and was developed on `Simplicity Studio v4` on `Ubuntu 19.04`.
 
 <br/>
 
@@ -20,6 +20,7 @@
 <br/>
 
 ## Table of contents
+
 - [dbprint](#dbprint)
   - [Table of contents](#table-of-contents)
   - [1 - Installation instructions](#1---installation-instructions)
@@ -38,7 +39,6 @@
       - [5.2.2 - More advanced functions](#522---more-advanced-functions)
       - [5.2.3 - Interrupt functionality](#523---interrupt-functionality)
   - [6 - Alternate locations of pins](#6---alternate-locations-of-pins)
-
 
 <br/>
 
@@ -86,6 +86,8 @@ It's advised to **surround dbprint statements in your code with `IF ... ENDIF`**
 ```C
 #if DEBUG_DBPRINT == 1 /* DEBUG_DBPRINT */
 
+dbprint_INIT(USART1, 4, true, false); /* initialize dbprint for use with VCOM */
+
 dbprintln("Hello world!"); /* An example of a dbprint statement */
 
 #endif /* DEBUG_DBPRINT */
@@ -124,6 +126,15 @@ dbprintln("Hello world!"); /* An example of a dbprint statement */
 
 ## 3 - VCOM
 
+ When using `dbprint` functionality, the following settings are used and can't be changed without editing the source code:
+
+- `Baudrate = 115200`
+- `8 databits`
+- `1 stopbit`
+- `No parity`
+
+<br/>
+
 VCOM is an on-board (on the `SLSTK3400A`) **UART to USB converter** alongside the Segger J-Link debugger. It's connected with microcontroller pins `PA0` (RX) and `PF2` (TX). This converter can then be used with [Putty](https://www.putty.org/) or another serial port program.
 
 When you want to **debug using VCOM with interrupt functionality disabled**, you can use the following initialization settings:
@@ -132,12 +143,7 @@ When you want to **debug using VCOM with interrupt functionality disabled**, you
 dbprint_INIT(USART1, 4, true, false);
 ```
 
-When using dbprint functionality, the following **settings** are used:
-
-- `Baudrate = 115200`
-- `8 databits`
-- `1 stopbit`
-- `No parity`
+Setting the third argument to `true` indicates to the code that `PA9`(`EFM_BC_EN`) should be set high to enable the isolation switch on the PCB of the Happy Gecko to link `PA0` (RX) and `PF2` (TX) to the debugger. **Don't use this pin yourself if you want to make use of the on-board UART to USB converter!**
 
 <br/>
 
@@ -357,3 +363,11 @@ The location numbers and corresponding `RX`and `TX`pins for `USART0`and `USART1`
 | US0_TX   | PE10 |      |      | PE13 | PB7  | PC0  | PC0  |
 | US1_RX   | PC1  |      | PD6  | PD6  | PA0  | PC2  |      |
 | US1_TX   | PC0  |      | PD7  | PD7  | PF2  | PC1  |      |
+
+<br/>
+
+VCOM:
+ - `USART1 #4` (`USART0` can't be used)
+ - RX - `PA0`
+ - TX - `PF2`
+ - Isolation switch - `PA9` (`EFM_BC_EN`) <br/> **Don't use this pin yourself when using the on-board UART to USB converter!**
