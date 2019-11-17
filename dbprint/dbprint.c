@@ -2,7 +2,7 @@
  * @file dbprint.c
  * @brief Homebrew println/printf replacement "DeBugPrint".
  * @details Originally designed for use on the Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48).
- * @version 6.2
+ * @version 7.0
  * @author Brecht Van Eeckhoudt
  *
  * ******************************************************************************
@@ -41,12 +41,14 @@
  *   @li v6.1: Made `dbpointer` a local variable (removed `extern`).
  *             Removed `extern` from the documentation.
  *   @li v6.2: Removed `static` before the local variables (not necessary).
+ *   @li v7.0: Updated documentation.
  *
  * ******************************************************************************
  *
  * @todo
  *   **Future improvements:**@n
- *     - Fix `dbSet_TXbuffer` and also add more functionality to print numbers, ...
+ *     - Implement `dbSet_TXbuffer` and `charHex_to_uint32` (if necessary).
+ *     - Add more functionality to print numbers, ...
  *     - Separate back-end <-> MCU specific code
  *
  * ******************************************************************************
