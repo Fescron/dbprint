@@ -86,7 +86,7 @@ It's advised to **surround dbprint statements in your code with `IF ... ENDIF`**
 ```C
 #if DEBUG_DBPRINT == 1 /* DEBUG_DBPRINT */
 
-dbprint_INIT(USART1, 4, true, false); /* initialize dbprint for use with VCOM */
+dbprint_INIT(USART1, 4, true, false); /* Initialize dbprint for use with VCOM */
 
 dbprintln("Hello world!"); /* An example of a dbprint statement */
 
