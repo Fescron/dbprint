@@ -50,6 +50,7 @@
  *     - Implement `dbSet_TXbuffer` and `charHex_to_uint32` (if necessary).
  *     - Add more functionality to print numbers, ...
  *     - Separate back-end <-> MCU specific code
+ *     - Add SWO-mode
  *
  * ******************************************************************************
  *
